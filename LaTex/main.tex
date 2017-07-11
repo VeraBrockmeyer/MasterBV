@@ -1,0 +1,124 @@
+%******************************FORMATIERUNG****************************************
+\documentclass[a4paper, 12pt]{article}
+\usepackage{scrpage2}
+\usepackage{todonotes}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{esvect}
+\usepackage{caption}
+\pagestyle{scrheadings}
+\clearscrheadfoot
+\setheadsepline{.5pt}
+\setfootsepline{.5pt}
+\automark[section]{chapter}
+\ihead{\headmark}
+\ohead{\pagemark}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[space]{grffile}
+\usepackage{setspace}
+\usepackage[T1]{fontenc}
+\usepackage[section]{placeins}
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Quellcode-Auszug}	
+\definecolor{lsgreen}{rgb}{0,.5,0}
+\definecolor{lsred}{rgb}{.7,0,0}
+\definecolor{lsorange}{rgb}{.9,.5,0}
+\definecolor{lsgray}{rgb}{.5,.5,.5}
+\lstloadlanguages{[Sharp]C}
+\lstset{
+	frame=tb,
+	aboveskip=10mm,
+	belowskip=5mm,
+	showstringspaces=false,
+	columns=flexible,
+	captionpos=b,
+	basicstyle={\scriptsize\ttfamily},
+	numbers=left,
+	numberstyle=\tiny\color{lsgray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{lsorange},
+	stringstyle=\color{lsgreen},
+	breaklines=true,
+	breakatwhitespace=true,
+	rulecolor=\color{lsgray},
+	xleftmargin=7mm,
+	tabsize=3
+}
+\newcommand{\changefont}[3]{
+\fontfamily{#1} \fontseries{#2} \fontshape{#3} \selectfont}
+\usepackage{datetime}
+\newdateformat{monthyeardate}{%
+  \monthname[\THEMONTH] \THEYEAR}
+\usepackage{geometry}
+\geometry{verbose,a4paper,tmargin=30mm,bmargin=30mm,lmargin=35mm,rmargin=25mm}
+\usepackage[numbers,square]{natbib}
+\usepackage[
+	breaklinks=true,
+	pdfauthor={Laura Anger, Vera Brockmeyer, Britta Boerner, Anna Bolder},
+	pdftitle={Interaction Lab},
+	pdftoolbar=true,
+	%pdfsubject={},
+	colorlinks=true,
+	linkcolor=blue,
+	citecolor=blue,
+	urlcolor=blue,
+	linktocpage=true
+	]{hyperref}
+\usepackage{algorithmicx}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage[ruled]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{pdfpages}
+\usepackage[
+	font=small,
+	labelfont=bf, 
+	format=plain,
+	indention=1cm
+	]{caption}
+\setlength{\parindent}{0pt} 
+\setlength{\parskip}{.5em}
+\usepackage{color}
+\definecolor{myColor}{rgb}{0.8,0.8,0.8}
+\newcommand{\Absatzbox}[1]{\parbox[0pt][2em][c]{0cm}{}}
+\usepackage{listings}
+\usepackage{tabularx}
+
+%*****************************ENDE FORMATIERUNG****************************************
+
+\begin{document}
+%\linespread{1.2}
+%\changefont{ppl}{m}{n}
+
+%INHALTSVERZEICHNIS
+%\pagenumbering{arabic}
+%\input{main/Inhaltsverzeichnis.tex}
+
+\input{Chapter/Cover/Cover.tex}
+	\tableofcontents
+	\newpage
+	%\listoffigures
+	%\newpage
+	%\listoftables
+	%\newpage
+
+
+%Laura: Reihenfolge darf gerne geändert werden
+\input{Chapter/Introduction/Introduction.tex}
+\input{Chapter/StateOfTheArt/StateOfTheArt.tex}
+\input{Chapter/Materials/Materials.tex}
+\input{Chapter/Methode/Methode.tex}
+\input{Chapter/Evaluation/Evaluation.tex}
+\input{Chapter/Reflexion/Reflexion.tex}
+\input{Chapter/Conclusion/Conclusion.tex}
+
+
+
+
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{main}
+\end{document}
