@@ -1,4 +1,3 @@
-run("Text File... ", "open=C:\\Users\\Vera\\Desktop\\PointPairsLena.txt");
-open("F:\\Master\\BV\\Bilder\\verzerrt.jpg");
-
-run("PointPatternCalibration ");
+open("F:\\Master\\BV\\git\\MasterBV\\JavaPlugin\\workspace\\18mm_11-1.tif");
+//open("D:\\Google Drive\\FH Köln\\BV\\Projekt\\original.txt");
+//run("point grid radial affin distor ");
