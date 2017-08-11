@@ -1,40 +1,31 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.MaxIter;
-import org.apache.commons.math3.optim.OptimizationData;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.PointVectorValuePair;
-import org.apache.commons.math3.optim.SimpleBounds;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
-import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.util.Precision;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.gui.NewImage;
-import ij.plugin.PlugIn;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 
 public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
 	ImagePlus sourcePicture;
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void run(ImageProcessor img) 
 	{
@@ -76,18 +67,35 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 					
 					for(int j = 1; j < lines.length; j++) //erste zeile überspringen
 					{
-						String[] numbers = lines[j].split("\t");
+						String[] numbers = lines[j].split("\t"); //spalte zeile anhand des tab zeichens
+						
 						PointPair txt_pointPair = new PointPair(
 								Integer.parseInt(numbers[1].trim()), //x source
 								Integer.parseInt(numbers[2].trim()), //y source
-								Integer.parseInt(numbers[3].trim()), //x' target
-								Integer.parseInt(numbers[4].trim()), //y' target
+								-1.00,//Integer.parseInt(numbers[3].trim()), //x' target wird ausgerechnet
+								-1.00, //Integer.parseInt(numbers[4].trim()), //y' target wird ausgerechnet
 								
-								//r target
-								Math.sqrt(Math.pow(Integer.parseInt(numbers[1].trim()) - img.getWidth() /2, 2.00) 
-										+ Math.pow(Integer.parseInt(numbers[2].trim()) - img.getHeight() /2, 2.00)
-										 ));
+								//r = [ (x - (imgWidth / 2))^2 + (y - imgHeight / 2)^2 ]^(1/2)
+								Math.sqrt( (Integer.parseInt(numbers[1].trim()) - 1084) * (Integer.parseInt(numbers[1].trim()) - 1084)
+										+ (Integer.parseInt(numbers[2].trim()) - 713) * (Integer.parseInt(numbers[2].trim()) - 713)),
+								 //Math.sqrt( (Integer.parseInt(numbers[1].trim()) - img.getWidth() /2.00) * (Integer.parseInt(numbers[1].trim()) - img.getWidth() /2.00)
+								//		+ (Integer.parseInt(numbers[2].trim()) - img.getHeight() /2.00) * (Integer.parseInt(numbers[2].trim()) - img.getHeight() /2.00)),
+								Integer.parseInt(numbers[0].trim())//Index							
+								);	
 						
+						//berechne x_target und y_target anstatt es aus der datei auszulesen:
+						int rowid = (int)(txt_pointPair.index / 15.0); // 0 - 8 reihe
+						int colid = (int)(txt_pointPair.index - rowid * 15.0)  ; // 0- 15 spalte
+						
+					
+						
+						int y_offset = 713 - 3 * 111; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach oben
+						int x_offset = 1084 - 7 * 111; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach links
+						
+						txt_pointPair.y_target = rowid * 111.0 + y_offset;
+						txt_pointPair.x_target = colid * 111.0 + x_offset;
+						//txt_pointPair.r_source = Math.sqrt((txt_pointPair.x_target -  img.getWidth() /2.00) * (txt_pointPair.x_target -  img.getWidth() /2.00) + 
+						//								(txt_pointPair.y_target -  img.getHeight() /2.00) * (txt_pointPair.y_target -  img.getHeight() /2.00));
 						PointPairs.add(txt_pointPair);
 					}
 					
@@ -95,7 +103,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 					//TODO: radiale entzerrung berechnen
 					double[] radial_dist_koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
 					
+					//punkt paarte reduzieren
+					/*List<PointPair> templst = new ArrayList<PointPair>();
+					for (int j = 0; j < PointPairs.size(); j+=3) 
+					{
+						templst.add(PointPairs.get(j));
+					}
+					PointPairs = templst;
+					*/
+					
 					//Entzerrung auf punkte anwenden
+					/*
 					for(int j=0; j < PointPairs.size(); j++)
 					{
 						//x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
@@ -110,49 +128,44 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 			        			+ radial_dist_koeff[1] * Math.pow(PointPairs.get(i).r_source, 4.00)
 			        			+ radial_dist_koeff[2] * Math.pow(PointPairs.get(i).r_source, 6.00)
 			        			) * PointPairs.get(i).y_source ;
-					}
-					
+					}*/
 					
 					//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
-					ImagePlus newImg;
-					if(sourcePicture.getBitDepth() <= 8)
-					{
-						newImg =  NewImage.createByteImage ("entzertes_Bild", sourcePicture.getWidth(), sourcePicture.getHeight(), 1, 
-						NewImage.FILL_WHITE); 
-					}
-					else
-					{
-						newImg =  NewImage.createRGBImage ("entzertes_Bild", sourcePicture.getWidth(), sourcePicture.getHeight(), 1, 
-						NewImage.FILL_WHITE); 
-					}
+					ImagePlus newImg = new ImagePlus();
+					ShortProcessor sp = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 					
-					for (int y= 0; y < newImg.getHeight();y++) 
+					//Pixel Werte für neues Bild berechnen nach dem "target to source" Verfahren
+					for (int y_target= 0; y_target < sourcePicture.getHeight();y_target++) 
 					{
-						for (int x= 0; x < newImg.getWidth(); x++)
+						for (int x_target= 0; x_target < sourcePicture.getWidth(); x_target++)
 						{
-							int x_coord_vorlage =  (int) Math.round((1 
+							// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
+							double x_distorted =  ( 1.00 /(1 
 				        			+ radial_dist_koeff[0] * Math.pow(PointPairs.get(i).r_source, 2.00) 
 				        			+ radial_dist_koeff[1] * Math.pow(PointPairs.get(i).r_source, 4.00)
 				        			+ radial_dist_koeff[2] * Math.pow(PointPairs.get(i).r_source, 6.00)
-				        			) * x);
+				        			) * x_target);
 							
-							int y_coord_vorlage =  (int) Math.round((1 
+							double y_distorted =  (1.00 /(1 
 				        			+ radial_dist_koeff[0] * Math.pow(PointPairs.get(i).r_source, 2.00) 
 				        			+ radial_dist_koeff[1] * Math.pow(PointPairs.get(i).r_source, 4.00)
 				        			+ radial_dist_koeff[2] * Math.pow(PointPairs.get(i).r_source, 6.00)
-				        			) * y);
+				        			) * y_target);							
 							
-							if(x_coord_vorlage < sourcePicture.getWidth() && y_coord_vorlage < sourcePicture.getHeight())
+							sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
+							if(x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight())
 							{
-								newImg.getStack().getProcessor(1).putPixel(x, y, sourcePicture.getStack().getProcessor(1).getPixel(x_coord_vorlage, y_coord_vorlage));
+								sp.putPixel(x_target, y_target, (int)Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
+								//newImg.getProcessor().putPixelValue(x, y, sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage, y_coord_vorlage));
 							}
 							else //mit schwarz auffüllen				
 							{
-								newImg.getStack().getProcessor(1).putPixel(x, y, 0);
+								//newImg.getStack().getProcessor(1).putPixel(x, y, 0);
 							}	
 						}	
 					}
 					//Am Ende müssen Sie das neue Bild noch auf den Bildschirm bringen.
+					newImg = new ImagePlus("Result", sp);
 					newImg.show();
 					
 					
@@ -181,16 +194,20 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 		
 		//set target data
 		lsb.target(newTarget);
-		double[] newStart = {10,10,10};
+		double[] newStart = {.001,.001,.001};
 		//set initial parameters
 		lsb.start(newStart);
 		//set upper limit of evaluation time
-		lsb.maxEvaluations(1000);
+		lsb.maxEvaluations(9000);
 		//set upper limit of iteration time
-		lsb.maxIterations(10000);
+		lsb.maxIterations(20000);
 
 		//construct LevenbergMarquardtOptimizer 
-		LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer();
+		LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer(9000, 
+																			0.000000001,
+																			0.0000001,
+																			0.0000001,
+																			Precision.SAFE_MIN);
 		try
 		{
 			//do LevenbergMarquardt optimization
