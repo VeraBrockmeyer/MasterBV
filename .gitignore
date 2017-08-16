@@ -50,5 +50,5 @@
 hs_err_pid*
 
 #java compiled files
-JavaPlugin/workspace/.metadata/
-JavaPlugin/workspace/.recommenders/
+/JavaPlugin/workspace/.metadata/
+/JavaPlugin/workspace/.recommenders/
