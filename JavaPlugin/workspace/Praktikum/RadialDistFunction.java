@@ -31,7 +31,7 @@ public class RadialDistFunction
         for (int i = 0; i < _pointPairs.size(); i++) 
         {
             target[i] = _pointPairs.get(i).x_target; //zielwerte x
-            target[i + _pointPairs.size()] = _pointPairs.get(i).y_target; //zielwerte y
+            //target[i + _pointPairs.size()] = _pointPairs.get(i).y_target; //zielwerte y
         }
         
         return target;
@@ -63,12 +63,12 @@ public class RadialDistFunction
 		        			+ radial_verz_koeffizienten[2] * Math.pow(_pointPairs.get(i).r_source, 6.00)
 		        			) * _pointPairs.get(i).x_source ;
 		        	
-		        	//radiale verzerrung in y-richtung
-		        	calculated_target_points[i+_pointPairs.size()] = (1 
-		        			+ radial_verz_koeffizienten[0] * Math.pow(_pointPairs.get(i).r_source, 2.00) 
-		        			+ radial_verz_koeffizienten[1] * Math.pow(_pointPairs.get(i).r_source, 4.00)
-		        			+ radial_verz_koeffizienten[2] * Math.pow(_pointPairs.get(i).r_source, 6.00)
-		        			) * _pointPairs.get(i).y_source ;
+//		        	//radiale verzerrung in y-richtung
+//		        	calculated_target_points[i+_pointPairs.size()] = (1 
+//		        			+ radial_verz_koeffizienten[0] * Math.pow(_pointPairs.get(i).r_source, 2.00) 
+//		        			+ radial_verz_koeffizienten[1] * Math.pow(_pointPairs.get(i).r_source, 4.00)
+//		        			+ radial_verz_koeffizienten[2] * Math.pow(_pointPairs.get(i).r_source, 6.00)
+//		        			) * _pointPairs.get(i).y_source ;
 		        	
 		        	 IJ.log(String.format("Calculated values: X_t = %f  X_t_cal = %f ; Y_t = %f Y_t_cal = %f", _pointPairs.get(i).x_target,calculated_target_points[i],_pointPairs.get(i).y_target,calculated_target_points[i+_pointPairs.size()])); 			           		 		
 		        }
@@ -119,10 +119,10 @@ public class RadialDistFunction
 		            jacobian[i][1] = Math.pow(_pointPairs.get(i).r_source, 4.00)  * _pointPairs.get(i).x_source; 
 		            jacobian[i][2] = Math.pow(_pointPairs.get(i).r_source, 6.00)  * _pointPairs.get(i).x_source;
 		            
-		            jacobian[i+_pointPairs.size()][0] = Math.pow(_pointPairs.get(i).r_source, 2.00)  * _pointPairs.get(i).y_source; 
-		            jacobian[i+_pointPairs.size()][1] = Math.pow(_pointPairs.get(i).r_source, 4.00)  * _pointPairs.get(i).y_source; 
-		            jacobian[i+_pointPairs.size()][2] = Math.pow(_pointPairs.get(i).r_source, 6.00)  * _pointPairs.get(i).y_source;
-		        
+//		            jacobian[i+_pointPairs.size()][0] = Math.pow(_pointPairs.get(i).r_source, 2.00)  * _pointPairs.get(i).y_source; 
+//		            jacobian[i+_pointPairs.size()][1] = Math.pow(_pointPairs.get(i).r_source, 4.00)  * _pointPairs.get(i).y_source; 
+//		            jacobian[i+_pointPairs.size()][2] = Math.pow(_pointPairs.get(i).r_source, 6.00)  * _pointPairs.get(i).y_source;
+//		        
 		            //IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+_pointPairs.size()][0],  jacobian[i+_pointPairs.size()][1],  jacobian[i+_pointPairs.size()][2])); 			           		 		
 
 		        }

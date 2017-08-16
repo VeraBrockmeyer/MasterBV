@@ -1,22 +1,15 @@
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.Precision;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
-import ij.gui.NewImage;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -25,13 +18,15 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
 	private ImagePlus sourcePicture;
 	private List<PointPair> PointPairs = new ArrayList<PointPair>();
-	private double nCol = 19.;
-	private double nRow = 13.;
+	private int nCol = 19;
+	private int nRow = 13;
 	private int xCenter = 1084;
 	private int yCenter =713;
 	private int distCross =111;
 	private int nXCross2Corner=9;
-	private int nYCross2Corner=5;
+	private int nYCross2Corner=6;
+	private ImagePlus debugImg;
+	private ImageProcessor debug;
 
 	
 	@SuppressWarnings("deprecation")
@@ -92,8 +87,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 								);	
 						
 						//berechne x_target und y_target anstatt es aus der datei auszulesen:
-						int rowid = (int)(txt_pointPair.index / nRow); // 0 - 8 reihe
-						int colid = (int)(txt_pointPair.index - rowid * nRow)  ; // 0- 15 spalte
+						int colid = (int)(txt_pointPair.index / nRow); // 0 - 8 reihe
+						int rowid = (int)(txt_pointPair.index - colid * nRow)  ; // 0- 15 spalte
 						
 					
 						
@@ -105,12 +100,23 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 						//txt_pointPair.r_source = Math.sqrt((txt_pointPair.x_target -  img.getWidth() /2.00) * (txt_pointPair.x_target -  img.getWidth() /2.00) + 
 						//								(txt_pointPair.y_target -  img.getHeight() /2.00) * (txt_pointPair.y_target -  img.getHeight() /2.00));
 						PointPairs.add(txt_pointPair);
+						debug.drawOval((int)txt_pointPair.x_target, (int)txt_pointPair.y_target, 3, 3);
 					}
 					
-				}}			
+				}}		
+		  	    
+		  		List<PointPair> temp = new ArrayList<PointPair>();
+		  		for (PointPair p : PointPairs) 
+		  		{
+					temp.add(new PointPair(p.y_source, p.y_source, p.y_target, p.y_target));
+				}
+		  	
+		  			ImagePlus debugImg = new ImagePlus("Debug",debug);
+		  			debugImg.show();
 					//radiale entzerrung berechnen
 					double[] radial_dist_koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
-					
+					double[] radial_dist_koeff_y = entzerungskoeefizienten_radial_berechnen(temp);
+
 								
 					//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
 					ImagePlus newImg = new ImagePlus();
@@ -124,16 +130,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 
 							double radius2Center =computeRadius2Center(x_target, y_target);
 							// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
-							double x_distorted =  (1./(1. 
+							double x_distorted =  (1./ (1. 
 				        			+ radial_dist_koeff[0] * Math.pow(radius2Center, 2.00) 
 				        			+ radial_dist_koeff[1] * Math.pow(radius2Center, 4.00)
 				        			+ radial_dist_koeff[2] * Math.pow(radius2Center, 6.00)
 				        			) * x_target);
 							
-							double y_distorted =  (1./(1. 
-				        			+ radial_dist_koeff[0] * Math.pow(radius2Center, 2.00) 
-				        			+ radial_dist_koeff[1] * Math.pow(radius2Center, 4.00)
-				        			+ radial_dist_koeff[2] * Math.pow(radius2Center, 6.00)
+							double y_distorted = 
+							(1./(1. 
+				        			+ radial_dist_koeff_y[0] * Math.pow(radius2Center, 2.00) 
+				        			+ radial_dist_koeff_y[1] * Math.pow(radius2Center, 4.00)
+				        			+ radial_dist_koeff_y[2] * Math.pow(radius2Center, 6.00)
 				        			) * y_target);							
 							
 							sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
@@ -337,6 +344,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 	public int setup(String arg0, ImagePlus arg1) 
 	{
 		this.sourcePicture = arg1;
+		debug = sourcePicture.getProcessor().duplicate();
+		debug.setLineWidth(2);
+		debug.setColor(Color.WHITE);
 		return DOES_ALL;
 	}
 }
