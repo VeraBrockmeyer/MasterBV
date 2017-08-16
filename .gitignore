@@ -52,3 +52,4 @@ hs_err_pid*
 #java config files
 JavaPlugin/workspace/.metadata/
 JavaPlugin/workspace/.recommenders/
+*.classpath
