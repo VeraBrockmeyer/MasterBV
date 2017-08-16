@@ -20,13 +20,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
 	private ImagePlus sourcePicture;
 	private List<PointPair> PointPairs = new ArrayList<PointPair>();
-	//private int nCol = 19;
-	//private int nRow = 13;
-	private int xCenter = 1084;
-	private int yCenter =713;
-	//private int distCross =111;
-	private int nXCross2Corner=9;
-	private int nYCross2Corner=6;
+	private int nCol = 17;//19;
+	private int nRow = 11;
+	private int xCenter = 971;//1084;
+	private int yCenter = 651;//713;
+	private int distCross =111;
+	private int nXCross2Corner=8;
+	private int nYCross2Corner=5;
 	private ImagePlus debugImg;
 	private ImageProcessor debug;
 	private ArrayList<SimplePair> xPointPairs = new ArrayList<SimplePair>();
@@ -94,6 +94,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 						
 						PointPair pair = new PointPair(xPair.source, yPair.source, xPair.target, yPair.target, yPair.radius, yPair.index);
 						
+						
 						/*
 						//berechne x_target und y_target anstatt es aus der datei auszulesen:
 						int colid = (int)(xPair.index / nRow); // 0 - 8 reihe
@@ -123,8 +124,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
   			debugImg.show();
 			//radiale entzerrung berechnen
 			double[] koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
-			//double[] y_koeff= entzerungskoeefizienten_radial_berechnen(yPointPairs);
-
+			double[] y_koeff= entzerungskoeefizienten_radial_berechnen_simple(yPointPairs);
+			double[] x_koeff= entzerungskoeefizienten_radial_berechnen_simple(xPointPairs);
 						
 			//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
 			ImagePlus newImg = new ImagePlus();
@@ -138,18 +139,31 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 
 					double radius2Center =computeRadius2Center(x_target, y_target);
 					// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
-					double x_distorted =  (1./ (1. 
-		        			+koeff[0] * Math.pow(radius2Center, 2.00) 
-		        			+koeff[1] * Math.pow(radius2Center, 4.00)
-		        			+koeff[2] * Math.pow(radius2Center, 6.00)
-		        			) * x_target);
 					
-					double y_distorted = 
-					(1./(1. 
-		        			+koeff[0] * Math.pow(radius2Center, 2.00) 
-		        			+koeff[1] * Math.pow(radius2Center, 4.00)
-		        			+koeff[2] * Math.pow(radius2Center, 6.00)
-		        			) * y_target);							
+//					double x_distorted =  (1./ (1. 
+//		        			+koeff[0] * Math.pow(radius2Center, 2.00) 
+//		        			+koeff[1] * Math.pow(radius2Center, 4.00)
+//		        			+koeff[2] * Math.pow(radius2Center, 6.00)
+//		        			) * x_target);
+//					
+//					double y_distorted = 
+//					(1./(1. 
+//		        			+koeff[0] * Math.pow(radius2Center, 2.00) 
+//		        			+koeff[1] * Math.pow(radius2Center, 4.00)
+//		        			+koeff[2] * Math.pow(radius2Center, 6.00)
+//		        			) * y_target);							
+					
+					double x_distorted =  (1./ (1. 
+        			+x_koeff[0] * Math.pow(radius2Center, 2.00) 
+        			+x_koeff[1] * Math.pow(radius2Center, 4.00)
+        			+x_koeff[2] * Math.pow(radius2Center, 6.00)
+        			) * x_target);
+			
+					double y_distorted = (1./(1. 
+        			+y_koeff[0] * Math.pow(radius2Center, 2.00) 
+        			+y_koeff[1] * Math.pow(radius2Center, 4.00)
+        			+y_koeff[2] * Math.pow(radius2Center, 6.00)
+        			) * y_target);	
 					
 					sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
 					if(x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight())
@@ -240,6 +254,61 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 	}
 	
 
+	@SuppressWarnings("deprecation")
+	private double[] entzerungskoeefizienten_radial_berechnen_simple(List<SimplePair> punkt_paare)
+	{
+		RadialDistFunction_simple qf = new RadialDistFunction_simple(punkt_paare);
+		LeastSquaresBuilder lsb = new LeastSquaresBuilder();
+
+		//set model function and its jacobian
+		lsb.model(qf.retMVF(), qf.retMMF());
+		double[] newTarget = qf.realTargetPoints();
+		
+		//set target data
+		lsb.target(newTarget);
+		double[] newStart = {.001,.001,.001};
+		//set initial parameters
+		lsb.start(newStart);
+		//set upper limit of evaluation time
+		lsb.maxEvaluations(9000);
+		//set upper limit of iteration time
+		lsb.maxIterations(20000);
+
+		//construct LevenbergMarquardtOptimizer 
+		/*LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer(9000, 
+																			0.000000001,
+																			0.0000001,
+																			0.0000001,
+																			Precision.SAFE_MIN);*/
+		
+		LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer();
+		try
+		{
+			//do LevenbergMarquardt optimization
+			LeastSquaresOptimizer.Optimum lsoo = lmo.optimize(lsb.build());
+			
+			//get optimized parameters
+			final double[] optimalValues = lsoo.getPoint().toArray();			
+			//output data
+			IJ.log("A: " + optimalValues[0]);
+			IJ.log("B: " + optimalValues[1]);
+			IJ.log("C: " + optimalValues[2]);
+			IJ.log("Iteration number: "+lsoo.getIterations());
+			IJ.log("Evaluation number: "+lsoo.getEvaluations());
+			
+			return optimalValues;
+			
+		} 
+		catch (Exception e) 
+		{
+			System.out.println(e.toString());
+			return null;
+		}
+		
+		
+	}
+	
+	
 	//Berechnet anhand der Punktpaare die Affine Verzerrungsmatrix und gibt diese zurück
 //	private double[][] entzerrungsmatrix_affin_berechnen(List<PointPair> punkt_paare)
 //	{
