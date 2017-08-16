@@ -124,7 +124,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 
 							double radius2Center =computeRadius2Center(x_target, y_target);
 							// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
-							double x_distorted =  (1./ (1. 
+							double x_distorted =  (1./(1. 
 				        			+ radial_dist_koeff[0] * Math.pow(radius2Center, 2.00) 
 				        			+ radial_dist_koeff[1] * Math.pow(radius2Center, 4.00)
 				        			+ radial_dist_koeff[2] * Math.pow(radius2Center, 6.00)
