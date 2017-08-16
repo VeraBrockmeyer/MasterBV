@@ -18,12 +18,12 @@ import ij.process.ShortProcessor;
 public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
 	private ImagePlus sourcePicture;
-	private List<PointPair> PointPairs = new ArrayList<PointPair>();
-	private int nCol = 19;
-	private int nRow = 13;
+	//private List<PointPair> PointPairs = new ArrayList<PointPair>();
+	//private int nCol = 19;
+	//private int nRow = 13;
 	private int xCenter = 1084;
 	private int yCenter =713;
-	private int distCross =111;
+	//private int distCross =111;
 	private int nXCross2Corner=9;
 	private int nYCross2Corner=6;
 	private ImagePlus debugImg;
@@ -78,19 +78,19 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 						
 						SimplePair xPair = new SimplePair(	
 								Integer.parseInt(numbers[1].trim()), //x source
-								-1.00,//Integer.parseInt(numbers[3].trim()), //x' target wird ausgerechnet
+								Integer.parseInt(numbers[3].trim()), //x' target 
 								Math.sqrt( (Integer.parseInt(numbers[1].trim()) - xCenter) * (Integer.parseInt(numbers[1].trim()) - xCenter)
 										+ (Integer.parseInt(numbers[2].trim()) - yCenter) * (Integer.parseInt(numbers[2].trim()) - yCenter)),
 								Integer.parseInt(numbers[0].trim()));//Index	);
 								
 						SimplePair yPair = new SimplePair(	
-								Integer.parseInt(numbers[2].trim()), //x source
-								-1.00,//Integer.parseInt(numbers[3].trim()), //x' target wird ausgerechnet
+								Integer.parseInt(numbers[2].trim()), //y source
+								Integer.parseInt(numbers[4].trim()), //y' target 
 								Math.sqrt( (Integer.parseInt(numbers[1].trim()) - xCenter) * (Integer.parseInt(numbers[1].trim()) - xCenter)
 										+ (Integer.parseInt(numbers[2].trim()) - yCenter) * (Integer.parseInt(numbers[2].trim()) - yCenter)),
 								Integer.parseInt(numbers[0].trim()));//Index	);
-					
 						
+						/*
 						//berechne x_target und y_target anstatt es aus der datei auszulesen:
 						int colid = (int)(xPair.index / nRow); // 0 - 8 reihe
 						int rowid = (int)(yPair.index - colid * nRow)  ; // 0- 15 spalte
@@ -100,6 +100,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 						
 						xPair.target = colid * distCross+ x_offset;
 						yPair.target = rowid * distCross + y_offset;
+						*/
+						
 						xPointPairs.add(xPair);
 						yPointPairs.add(yPair);
 //						debug.drawString(""+xPair.index, (int)xPair.target, (int)yPair.target);
@@ -109,54 +111,55 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 						debug.drawOval((int)xPair.target, (int)yPair.target, 3, 3);
 					}
 					
-				}}		
+				}
+			}		
 		  	    
-		   			ImagePlus debugImg = new ImagePlus("Debug",debug);
-		  			debugImg.show();
-					//radiale entzerrung berechnen
-					double[]x_koeff = entzerungskoeefizienten_radial_berechnen(xPointPairs);
-					double[] y_koeff= entzerungskoeefizienten_radial_berechnen(yPointPairs);
+   			ImagePlus debugImg = new ImagePlus("Debug",debug);
+  			debugImg.show();
+			//radiale entzerrung berechnen
+			double[] x_koeff = entzerungskoeefizienten_radial_berechnen(xPointPairs);
+			double[] y_koeff= entzerungskoeefizienten_radial_berechnen(yPointPairs);
 
-								
-					//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
-					ImagePlus newImg = new ImagePlus();
-					ShortProcessor sp = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
+						
+			//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
+			ImagePlus newImg = new ImagePlus();
+			ShortProcessor sp = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
+			
+			//Pixel Werte für neues Bild berechnen nach dem "target to source" Verfahren
+			for (int y_target= 0; y_target < sourcePicture.getHeight();y_target++) 
+			{
+				for (int x_target= 0; x_target < sourcePicture.getWidth(); x_target++)
+				{
+
+					double radius2Center =computeRadius2Center(x_target, y_target);
+					// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
+					double x_distorted =  (1./ (1. 
+		        			+ x_koeff[0] * Math.pow(radius2Center, 2.00) 
+		        			+ x_koeff[1] * Math.pow(radius2Center, 4.00)
+		        			+ x_koeff[2] * Math.pow(radius2Center, 6.00)
+		        			) * x_target);
 					
-					//Pixel Werte für neues Bild berechnen nach dem "target to source" Verfahren
-					for (int y_target= 0; y_target < sourcePicture.getHeight();y_target++) 
+					double y_distorted = 
+					(1./(1. 
+		        			+ y_koeff[0] * Math.pow(radius2Center, 2.00) 
+		        			+y_koeff[1] * Math.pow(radius2Center, 4.00)
+		        			+ y_koeff[2] * Math.pow(radius2Center, 6.00)
+		        			) * y_target);							
+					
+					sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
+					if(x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight())
 					{
-						for (int x_target= 0; x_target < sourcePicture.getWidth(); x_target++)
-						{
-
-							double radius2Center =computeRadius2Center(x_target, y_target);
-							// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
-							double x_distorted =  (1./ (1. 
-				        			+ x_koeff[0] * Math.pow(radius2Center, 2.00) 
-				        			+ x_koeff[1] * Math.pow(radius2Center, 4.00)
-				        			+ x_koeff[2] * Math.pow(radius2Center, 6.00)
-				        			) * x_target);
-							
-							double y_distorted = 
-							(1./(1. 
-				        			+ y_koeff[0] * Math.pow(radius2Center, 2.00) 
-				        			+y_koeff[1] * Math.pow(radius2Center, 4.00)
-				        			+ y_koeff[2] * Math.pow(radius2Center, 6.00)
-				        			) * y_target);							
-							
-							sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
-							if(x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight())
-							{
-								sp.putPixel(x_target, y_target, (int)Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
-							}
-						}	
+						sp.putPixel(x_target, y_target, (int)Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
 					}
-					//Am Ende müssen Sie das neue Bild noch auf den Bildschirm bringen.
-					newImg = new ImagePlus("Result", sp);
-					newImg.show();
-					
-					
-					//Affine entzerrung berechnen
-					//this.entzerrungsmatrix_affin_berechnen(PointPairs);
+				}	
+			}
+			//Am Ende müssen Sie das neue Bild noch auf den Bildschirm bringen.
+			newImg = new ImagePlus("Result", sp);
+			newImg.show();
+			
+			
+			//Affine entzerrung berechnen
+			//this.entzerrungsmatrix_affin_berechnen(PointPairs);
 			
 		} 
 		catch(Exception exc)
