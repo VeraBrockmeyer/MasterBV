@@ -91,14 +91,10 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 								Integer.parseInt(numbers[0].trim()));//Index	);
 					
 						
-					
-						
 						//berechne x_target und y_target anstatt es aus der datei auszulesen:
 						int colid = (int)(xPair.index / nRow); // 0 - 8 reihe
 						int rowid = (int)(yPair.index - colid * nRow)  ; // 0- 15 spalte
-						
-					
-						
+				
 						int x_offset = xCenter - nXCross2Corner * distCross; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach links
 						int y_offset = yCenter - nYCross2Corner * distCross; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach oben
 						
