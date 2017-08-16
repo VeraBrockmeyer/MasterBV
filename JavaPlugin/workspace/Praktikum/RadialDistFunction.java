@@ -8,7 +8,6 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
 import ij.IJ;
 
-
 @SuppressWarnings("deprecation")
 public class RadialDistFunction 
 {
