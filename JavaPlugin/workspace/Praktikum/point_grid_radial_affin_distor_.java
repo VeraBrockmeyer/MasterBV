@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 	private int nYCross2Corner=6;
 	private ImagePlus debugImg;
 	private ImageProcessor debug;
+	private ArrayList<SimplePair> xPointPairs = new ArrayList<SimplePair>();
+	private ArrayList<SimplePair> yPointPairs = new ArrayList<SimplePair>();
 
 	
 	@SuppressWarnings("deprecation")
@@ -73,49 +76,50 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 					{
 						String[] numbers = lines[j].split("\t"); //spalte zeile anhand des tab zeichens
 						
-						PointPair txt_pointPair = new PointPair(
+						SimplePair xPair = new SimplePair(	
 								Integer.parseInt(numbers[1].trim()), //x source
-								Integer.parseInt(numbers[2].trim()), //y source
 								-1.00,//Integer.parseInt(numbers[3].trim()), //x' target wird ausgerechnet
-								-1.00, //Integer.parseInt(numbers[4].trim()), //y' target wird ausgerechnet
-								
-								//r = [ (x - (imgWidth / 2))^2 + (y - imgHeight / 2)^2 ]^(1/2)
 								Math.sqrt( (Integer.parseInt(numbers[1].trim()) - xCenter) * (Integer.parseInt(numbers[1].trim()) - xCenter)
 										+ (Integer.parseInt(numbers[2].trim()) - yCenter) * (Integer.parseInt(numbers[2].trim()) - yCenter)),
-			
-								Integer.parseInt(numbers[0].trim())//Index							
-								);	
+								Integer.parseInt(numbers[0].trim()));//Index	);
+								
+						SimplePair yPair = new SimplePair(	
+								Integer.parseInt(numbers[2].trim()), //x source
+								-1.00,//Integer.parseInt(numbers[3].trim()), //x' target wird ausgerechnet
+								Math.sqrt( (Integer.parseInt(numbers[1].trim()) - xCenter) * (Integer.parseInt(numbers[1].trim()) - xCenter)
+										+ (Integer.parseInt(numbers[2].trim()) - yCenter) * (Integer.parseInt(numbers[2].trim()) - yCenter)),
+								Integer.parseInt(numbers[0].trim()));//Index	);
+					
+						
+					
 						
 						//berechne x_target und y_target anstatt es aus der datei auszulesen:
-						int colid = (int)(txt_pointPair.index / nRow); // 0 - 8 reihe
-						int rowid = (int)(txt_pointPair.index - colid * nRow)  ; // 0- 15 spalte
+						int colid = (int)(xPair.index / nRow); // 0 - 8 reihe
+						int rowid = (int)(yPair.index - colid * nRow)  ; // 0- 15 spalte
 						
 					
 						
 						int x_offset = xCenter - nXCross2Corner * distCross; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach links
 						int y_offset = yCenter - nYCross2Corner * distCross; //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach oben
 						
-						txt_pointPair.x_target = colid * distCross+ x_offset;
-						txt_pointPair.y_target = rowid * distCross + y_offset;
-						//txt_pointPair.r_source = Math.sqrt((txt_pointPair.x_target -  img.getWidth() /2.00) * (txt_pointPair.x_target -  img.getWidth() /2.00) + 
-						//								(txt_pointPair.y_target -  img.getHeight() /2.00) * (txt_pointPair.y_target -  img.getHeight() /2.00));
-						PointPairs.add(txt_pointPair);
-						debug.drawOval((int)txt_pointPair.x_target, (int)txt_pointPair.y_target, 3, 3);
+						xPair.target = colid * distCross+ x_offset;
+						yPair.target = rowid * distCross + y_offset;
+						xPointPairs.add(xPair);
+						yPointPairs.add(yPair);
+//						debug.drawString(""+xPair.index, (int)xPair.target, (int)yPair.target);
+//						debug.setColor(Color.GRAY);
+//						debug.drawString(""+xPair.index, (int)xPair.source, (int)yPair.source);
+//						debug.setColor(Color.WHITE);
+						debug.drawOval((int)xPair.target, (int)yPair.target, 3, 3);
 					}
 					
 				}}		
 		  	    
-		  		List<PointPair> temp = new ArrayList<PointPair>();
-		  		for (PointPair p : PointPairs) 
-		  		{
-					temp.add(new PointPair(p.y_source, p.y_source, p.y_target, p.y_target));
-				}
-		  	
-		  			ImagePlus debugImg = new ImagePlus("Debug",debug);
+		   			ImagePlus debugImg = new ImagePlus("Debug",debug);
 		  			debugImg.show();
 					//radiale entzerrung berechnen
-					double[] radial_dist_koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
-					double[] radial_dist_koeff_y = entzerungskoeefizienten_radial_berechnen(temp);
+					double[]x_koeff = entzerungskoeefizienten_radial_berechnen(xPointPairs);
+					double[] y_koeff= entzerungskoeefizienten_radial_berechnen(yPointPairs);
 
 								
 					//erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild 
@@ -131,16 +135,16 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 							double radius2Center =computeRadius2Center(x_target, y_target);
 							// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
 							double x_distorted =  (1./ (1. 
-				        			+ radial_dist_koeff[0] * Math.pow(radius2Center, 2.00) 
-				        			+ radial_dist_koeff[1] * Math.pow(radius2Center, 4.00)
-				        			+ radial_dist_koeff[2] * Math.pow(radius2Center, 6.00)
+				        			+ x_koeff[0] * Math.pow(radius2Center, 2.00) 
+				        			+ x_koeff[1] * Math.pow(radius2Center, 4.00)
+				        			+ x_koeff[2] * Math.pow(radius2Center, 6.00)
 				        			) * x_target);
 							
 							double y_distorted = 
 							(1./(1. 
-				        			+ radial_dist_koeff_y[0] * Math.pow(radius2Center, 2.00) 
-				        			+ radial_dist_koeff_y[1] * Math.pow(radius2Center, 4.00)
-				        			+ radial_dist_koeff_y[2] * Math.pow(radius2Center, 6.00)
+				        			+ y_koeff[0] * Math.pow(radius2Center, 2.00) 
+				        			+y_koeff[1] * Math.pow(radius2Center, 4.00)
+				        			+ y_koeff[2] * Math.pow(radius2Center, 6.00)
 				        			) * y_target);							
 							
 							sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
@@ -172,9 +176,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 	}
 
 	@SuppressWarnings("deprecation")
-	private double[] entzerungskoeefizienten_radial_berechnen(List<PointPair> punkt_paare)
+	private double[] entzerungskoeefizienten_radial_berechnen(List<SimplePair> punkt_paare)
 	{
-		RadialDistFunction qf = new RadialDistFunction(punkt_paare);
+		RadialDistFunction_simple qf = new RadialDistFunction_simple(punkt_paare);
 		LeastSquaresBuilder lsb = new LeastSquaresBuilder();
 
 		//set model function and its jacobian
