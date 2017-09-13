@@ -1,6 +1,4 @@
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +16,9 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
-import ij.gui.NewImage;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-
-import PointPair;
 
 public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
@@ -134,7 +129,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter
 //  			debugImg.show();
 		  	
 			//radiale entzerrung berechnen
-			double[] koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
+			//double[] koeff = entzerungskoeefizienten_radial_berechnen(PointPairs);
 			double[] y_koeff= entzerungskoeefizienten_radial_berechnen_simple(yPointPairs);
 			double[] x_koeff= entzerungskoeefizienten_radial_berechnen_simple(xPointPairs);
 						
