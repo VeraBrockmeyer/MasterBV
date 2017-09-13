@@ -129,8 +129,7 @@ public class point_grid_radial_affin_distor_Vera_ implements PlugInFilter
 					
 					
 				}
-				ImagePlus test = new ImagePlus("",debug);
-				test.show();
+			
 
 			}
 		}
