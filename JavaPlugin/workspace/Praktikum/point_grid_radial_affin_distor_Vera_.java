@@ -450,9 +450,7 @@ for (int i = 0; i <xPointPairs.size(); i++) {
 		
 		
 	}
-	
-	
-	
+		
 	@Override
 	public int setup(String arg0, ImagePlus arg1) 
 	{
