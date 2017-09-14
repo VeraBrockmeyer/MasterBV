@@ -23,13 +23,13 @@ import ij.process.ShortProcessor;
 public class point_grid_radial_affin_distor_ implements PlugInFilter
 {
 	private ImagePlus sourcePicture;
-	private int nCol = 17;//19;
-	private int nRow = 11;
-	private int xCenter = 971;//1084;
-	private int yCenter = 651;//713;
-	private int distCross =111;
-	private int nXCross2Corner=8;
-	private int nYCross2Corner=5;
+	private static final int nCol = 17;//19;
+	private static final int nRow = 11;
+	private static final int xCenter = 971;//1084;
+	private static final int yCenter = 651;//713;
+	private static final int distCross =111;
+	private static final int nXCross2Corner=8;
+	private static final int nYCross2Corner=5;
 	private ImagePlus debugImg;
 	private ImageProcessor debug;
 
