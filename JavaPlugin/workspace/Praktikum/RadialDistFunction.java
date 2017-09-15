@@ -9,13 +9,13 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import ij.IJ;
 
 @SuppressWarnings("deprecation")
-public class RadialDistFunction_simple 
+public class RadialDistFunction 
 {
 
 	List<SimplePair> _pointPairs =  new ArrayList<SimplePair>();
 	
 	//Konstruktor
-	RadialDistFunction_simple(List<SimplePair> point_pairs)
+	RadialDistFunction(List<SimplePair> point_pairs)
 	{
 		this._pointPairs = point_pairs;
 	}

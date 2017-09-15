@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.LUDecomposition;
@@ -21,26 +20,84 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
+/**
+ * IJ Plugin für die Berechnung der Radialen Verzerrung anhand von Pixel-Koordinaten paaren
+ * @author Vera Brockmeyer
+ * @author Artjom Schwabski
+ *
+ */
 public class point_grid_radial_affin_distor_ implements PlugInFilter {
+	
+	/**
+	 * Speicher für das Vorlagenbild zum Abrufen der Pixel Werte zur Zeichnung der entzerrung
+	 */
 	private ImagePlus sourcePicture;
-	private static final int nCol = 21;
-	private static final int nRow = 13;
+
+	
+	/**
+	 * Speicher für die x-Koordinate des Gitter-Mittelpunktes
+	 */
 	private int xCenter = 1084;// 970;//
+	
+	/**
+	 * Speicher für die y-Koordinate des Gitter-Mittelpunktes
+	 */
 	private int yCenter = 713;// 652;//
+	
+	/**
+	 * Abstand der Gitter-Kreuzpunkte in pxl (zur Berechung des optimalen Gitters)
+	 */
 	private static final int distCross = 111;
+	
+	/**
+	 * Anzahl der Gitter-Kreuzpunkte vom Mittelpunkt bis zum Eckpunkt in x-Richtung (zur Berechung des optimalen Gitters)
+	 */
 	private static final int nXCross2Corner = 10;
+	
+	/**
+	 * Anzahl der Gitter-Kreuzpunkte vom Mittelpunkt bis zum Eckpunkt in y-Richtung (zur Berechung des optimalen Gitters)
+	 */
 	private static final int nYCross2Corner = 6;
+	
+	/**
+	 * Anzahl der Gitter-Spalten zur Berechnung des optimalen Gitters
+	 */
+	private static final int nCol = 21;
+	
+	/**
+	 * Anzahl der Gitter-Reihen zur Berechnung des optimalen Gitters
+	 */
+	private static final int nRow = 13;
+	
+	/**
+	 * 
+	 */
 	private ImagePlus debugImg;
+	
+	/**
+	 * 
+	 */
 	private ImageProcessor debug;
+	
+	/**
+	 * Speicher für Koorinaten Paare der x-Achse
+	 */
 	private ArrayList<SimplePair> xPointPairs = new ArrayList<SimplePair>();
+	
+	/**
+	 * Speicher für Koorinaten Paare der y-Achse
+	 */
 	private ArrayList<SimplePair> yPointPairs = new ArrayList<SimplePair>();
 
-	@SuppressWarnings("deprecation")
+
 	@Override
+	/**
+	 * Main Methode des Plugins startet das einlesen der Punkte die Berechung der entzerrung und das Zeichnen des entzerrten Bildes
+	 */
 	public void run(ImageProcessor img) {
 		try {
 			readData();
-			drawTargets(sourcePicture.getProcessor(), "SourceImage");
+			drawTargets(sourcePicture.getProcessor(), "SourceImage", xPointPairs, yPointPairs);
 			// computeAffineTransformation();
 			computeRadialTransformation();
 
@@ -49,6 +106,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 	}
 
+
+	/**
+	 * Öffnet die Auswahl eines Textfensters und lädt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
+	 * Zusätzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswählen zu können
+	 */
 	private void readData() {
 		// Textfenster mit Punktpaare Textdtei wählen:
 		java.awt.Window[] non_img_windows = WindowManager.getAllNonImageWindows();
@@ -136,14 +198,15 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
+	/**
+	 * Startet die Berechnung der Radialen entzerrung und Zeichnet das Ergebniss
+	 */
 	private void computeRadialTransformation() {
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 
 		// radiale entzerrung berechnen
-		// double[] koeff =
-		// entzerungskoeefizienten_radial_berechnen(PointPairs);
-		double[] y_koeff = entzerungskoeefizienten_radial_berechnen_simple(yPointPairs);
-		double[] x_koeff = entzerungskoeefizienten_radial_berechnen_simple(xPointPairs);
+		double[] y_koeff = compute_radial_dist_koeff(yPointPairs);
+		double[] x_koeff = compute_radial_dist_koeff(xPointPairs);
 
 		// Pixel Werte für neues Bild berechnen nach dem "target to source"
 		// Verfahren
@@ -151,7 +214,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			for (int x_target = 0; x_target < sourcePicture.getWidth(); x_target++) {
 				// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
 
-				double radius2Center = computeRadius2Center(x_target, y_target);
+				double radius2Center = computeRadius2Center(x_target, y_target, xCenter, yCenter);
 
 				double x_distorted = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 						+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
@@ -168,11 +231,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				}
 			}
 		}
-		drawTargets(targetImg, "Radial");
+		drawTargets(targetImg, "Radial", xPointPairs, yPointPairs);
 
-		// Punkt berechnen nach radialer entzerrung berechnen:
+		// Punkte berechnen nach radialer entzerrung berechnen:
 		for (int i = 0; i < xPointPairs.size(); i++) {
-			double radius2Center = computeRadius2Center(xPointPairs.get(i).source, yPointPairs.get(i).source);
+			double radius2Center = computeRadius2Center(xPointPairs.get(i).source, yPointPairs.get(i).source, xCenter, yCenter);
 
 			xPointPairs.get(i).source = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 					+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
@@ -186,7 +249,14 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
-	private void drawTargets(ImageProcessor ip, String s) {
+	/**
+	 * Zeichnet Punkte an die Stellen der Zielkoorinaten in das übergebene Bild und bringt es auf den Bildschirm
+	 * @param ip Bild in das die Punkte gezeichnet werden
+	 * @param s Name des Bildes
+	 * @param xPointPairs x-Koordinaten 
+	 * @param yPointPairs y-Koordinaten
+	 */
+	public static void drawTargets(ImageProcessor ip, String s, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
 		// Punkte in radial entzerrtes Bild malen
 		ImageProcessor res = ip.duplicate();
 		// Zeichne ziel punkte:
@@ -202,7 +272,14 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
-	private void computeAffineTransformation() {
+	
+	/**
+	 * Berechnet und zeichnet die Affine entzerrung anhand der x und y Punkt paare
+	 * Die X und Y Arrays müssen eine zusammengehörige Reihenfolge haben
+	 * @param xPointPairs Vorlage und Ziel-Koorinaten der x-Achse
+	 * @param yPointPairs Vorlage und Ziel-Koorinaten der y-Achse
+	 */
+	private void computeAffineTransformation(List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
 
 		/// Verschiebungsvektor und matrix berechnen
 
@@ -301,7 +378,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			}
 		}
 
-		drawTargets(targetImag, "Affine");
+		drawTargets(targetImag, "Affine", xPointPairs, yPointPairs);
 
 		for (int i = 0; i < xPointPairs.size(); i++) {
 			double[] t_h = { xPointPairs.get(i).source, yPointPairs.get(i).source, 1 };
@@ -314,14 +391,27 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
-	private double computeRadius2Center(double x_target, double y_target) {
-		return Math.sqrt((x_target - xCenter) * (x_target - xCenter) + (y_target - yCenter) * (y_target - yCenter));
+	
+	/**
+	 * Berechnet den Abstand zum Gittermittelpunkt
+	 * @param x x-Koordinate des Punktes
+	 * @param y y-Koordinate des Punktes
+	 * @param xCenter x-Koordinate des Mittelpunktes
+	 * @param yCenter y-Koordinate des Mittelpunktes
+	 * @return
+	 */
+	public static double computeRadius2Center(double x, double y, double xCenter, double yCenter) {
+		return Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
 
 	}
 
-	@SuppressWarnings("deprecation")
-	private double[] entzerungskoeefizienten_radial_berechnen_simple(List<SimplePair> punkt_paare) {
-		RadialDistFunction_simple qf = new RadialDistFunction_simple(punkt_paare);
+	/**
+	 * 
+	 * @param punkt_paare Array mit SimplePair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
+	 * @return Koefizienten der Radialen-Verzerrung nach Levenberg-Marquadt
+	 */
+	public static double[] compute_radial_dist_koeff(List<SimplePair> punkt_paare) {
+		RadialDistFunction qf = new RadialDistFunction(punkt_paare);
 		LeastSquaresBuilder lsb = new LeastSquaresBuilder();
 
 		// set model function and its jacobian
@@ -362,11 +452,15 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	}
 
 	@Override
+	/**
+	 * Speichern des Voralge Bildes bei Aufruf des Plugins und erzeugung einer Kopie
+	 */
 	public int setup(String arg0, ImagePlus arg1) {
 		this.sourcePicture = arg1;
 		debug = sourcePicture.getProcessor().duplicate();
 		debug.setLineWidth(2);
 		debug.setColor(Color.WHITE);
+		
 		xCenter = sourcePicture.getProcessor().getWidth() / 2;
 		yCenter = sourcePicture.getProcessor().getHeight() / 2;
 		return DOES_ALL;
