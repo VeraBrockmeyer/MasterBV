@@ -99,7 +99,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			readData();
 			drawTargets(sourcePicture.getProcessor(), "SourceImage", xPointPairs, yPointPairs);
 			// computeAffineTransformation();
-			computeRadialTransformation();
+			computeDrawRadialTransformation(sourcePicture, xPointPairs, yPointPairs);
 
 		} catch (Exception exc) {
 			IJ.error(exc.getMessage() + exc.getClass() + exc.getCause() + exc.getStackTrace());
@@ -197,13 +197,19 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 
 	}
-
+	
 	/**
-	 * Startet die Berechnung der Radialen entzerrung und Zeichnet das Ergebniss
+	 * Startet die Berechnung der Radialen entzerrung und zeichnet das Ergebnis
+	 * @param sourcePicture Verzerrtes IJ Bild
+	 * @param xPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
+	 * @param yPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
 	 */
-	private void computeRadialTransformation() {
+	public static void computeDrawRadialTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 
+		double xCenter = sourcePicture.getProcessor().getWidth() / 2;
+		double yCenter = sourcePicture.getProcessor().getHeight() / 2;
+		
 		// radiale entzerrung berechnen
 		double[] y_koeff = compute_radial_dist_koeff(yPointPairs);
 		double[] x_koeff = compute_radial_dist_koeff(xPointPairs);
@@ -233,7 +239,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 		drawTargets(targetImg, "Radial", xPointPairs, yPointPairs);
 
-		// Punkte berechnen nach radialer entzerrung berechnen:
+		// Punkte berechnen nach radialer entzerrung zur weiteren bearbeitung (optional):
 		for (int i = 0; i < xPointPairs.size(); i++) {
 			double radius2Center = computeRadius2Center(xPointPairs.get(i).source, yPointPairs.get(i).source, xCenter, yCenter);
 
@@ -278,8 +284,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * Die X und Y Arrays müssen eine zusammengehörige Reihenfolge haben
 	 * @param xPointPairs Vorlage und Ziel-Koorinaten der x-Achse
 	 * @param yPointPairs Vorlage und Ziel-Koorinaten der y-Achse
+	 * @return Affiner Verzerrungsvektor p
 	 */
-	private void computeAffineTransformation(List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
+	public static RealVector computeDrawAffineTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
 
 		/// Verschiebungsvektor und matrix berechnen
 
@@ -380,14 +387,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		drawTargets(targetImag, "Affine", xPointPairs, yPointPairs);
 
-		for (int i = 0; i < xPointPairs.size(); i++) {
+		//Tranformation auf Punkt paare anwenden zur weiteren verwendung
+		/*for (int i = 0; i < xPointPairs.size(); i++) {
 			double[] t_h = { xPointPairs.get(i).source, yPointPairs.get(i).source, 1 };
 			RealVector t_vec = new ArrayRealVector(t_h, false);
 			RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
 																				// berechnen
 			xPointPairs.get(i).source = coord_vec.getEntry(0);
 			yPointPairs.get(i).source = coord_vec.getEntry(1);
-		}
+		}*/
+		
+		return p;
 
 	}
 
