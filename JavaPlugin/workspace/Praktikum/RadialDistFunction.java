@@ -56,7 +56,7 @@ public class RadialDistFunction
 		return new MultivariateVectorFunction() 
 		{
 			@Override
-			public double[] value (double[] radial_verz_koeffizienten) throws IllegalArgumentException 
+			public double[] value (double[] radial_dist_coeff) throws IllegalArgumentException 
 			{
 				IJ.log("MVF called:");
 		        double[] calculated_target_points = new double[_pointPairs.size() ];
@@ -68,9 +68,9 @@ public class RadialDistFunction
 		        	
 		        	//radiale verzerrung in x-richtung:
 		        	calculated_target_points[i] = (1 
-		        			+ radial_verz_koeffizienten[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
-		        			+ radial_verz_koeffizienten[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
-		        			+ radial_verz_koeffizienten[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
+		        			+ radial_dist_coeff[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
+		        			+ radial_dist_coeff[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
+		        			+ radial_dist_coeff[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
 		        			) * _pointPairs.get(i).source ;
 		        	
 //		        
