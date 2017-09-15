@@ -8,21 +8,32 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
 import ij.IJ;
 
+/**
+ * Klasse für den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
+ * @author 
+ *
+ */
 @SuppressWarnings("deprecation")
 public class RadialDistFunction 
 {
 
+	/**
+	 * Interner Speicher für die Punkt-Paare
+	 */
 	List<SimplePair> _pointPairs =  new ArrayList<SimplePair>();
 	
-	//Konstruktor
+	/**
+	 * Konstruktor
+	 * @param point_pairs Start und Ziel Koordinaten der Punkte
+	 */
 	RadialDistFunction(List<SimplePair> point_pairs)
 	{
 		this._pointPairs = point_pairs;
 	}
 	
     /**
-     * return target data as double array by target data
-     * @return target	double array of target data
+     * Gibt die Ziel-Punkt-Koordinaten als double Array aus für den LevenbergMarquadt Optimierer
+     * @return target	double array mit den ZielKoordinaten 
      */
     public double[] realTargetPoints() 
     {
@@ -37,8 +48,8 @@ public class RadialDistFunction
     }
     
     /**
-     * Define model function and return values
-     * @return	return the values of model function by input data
+     * Ezeugt die Verzerrungs-Funktion für den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
+     * @return	Verzerrungs-Funktion in der zu den Keffizienten die Ziel-Werte berechnet werden
      */
     public MultivariateVectorFunction retMVF() 
     {
@@ -76,8 +87,8 @@ public class RadialDistFunction
     
     
     /**
-     * Return the jacobian of the model function
-     * @return	return the jacobian
+     * ERzeugt die jacobi-Matrix-Funktion (Ableitung nach den Koeffizienten)
+     * @return	Jacobi-Matrix-Funktion berechnet Ableitung nach den Koeffizienten
      */
     public MultivariateMatrixFunction retMMF() 
     {
