@@ -17,5 +17,5 @@ run("point grid radial affin distor Vera ");
 open("F:\\Master\\BV\\git\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\testimage_dist.jpg");
 
 open("F:\\Master\\BV\\git\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\testimage.txt");
-
+//run("point grid radial affin distor ");
 run("RadialDistortion ");

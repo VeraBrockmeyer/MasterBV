@@ -76,8 +76,8 @@ public class RadialDistortion_ implements PlugInFilter {
 	public void run(ImageProcessor img) {
 		try {
 			ArrayList<PointPair> PointPairs = readData();
+			drawTargets(distPicture.getProcessor(), "SourceImage",PointPairs);
 			computeDrawRadialTransformation(distPicture, PointPairs);
-			//drawTargets(distPicture.getProcessor(), "SourceImage",PointPairs);
 			//sourcePicture=computeDrawAffineTransformation(sourcePicture, xPointPairs, yPointPairs);
 			//sourcePicture=computeDrawPerpectiveTransformation(sourcePicture, xPointPairs, yPointPairs);
 
@@ -180,89 +180,89 @@ public class RadialDistortion_ implements PlugInFilter {
 	}
 
 
-	public static ImagePlus computeDrawPerpectiveTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs){
-		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
-	
-		double[][]B = new double[xPointPairs.size()*2][9];
-		int counter = 0;
-		for (int i = 0; i < B.length; i+=2) {
-			
-			B[i][0] = -xPointPairs.get(counter).undistorted;
-			B[i][1] = -yPointPairs.get(counter).undistorted;
-			B[i][2] = -1.;
-			B[i][3] = 0.;
-			B[i][4] = 0.;
-			B[i][5] = 0.;
-			B[i][6] = xPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
-			B[i][7] = yPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
-			B[i][8] = xPointPairs.get(counter).distorted;
-			B[i+1][0] = 0.;
-			B[i+1][1] = 0.;
-			B[i+1][2] = 0.;
-			B[i+1][3] = -xPointPairs.get(counter).undistorted;
-			B[i+1][4] = -yPointPairs.get(counter).undistorted;
-			B[i+1][5] = -1.;
-			B[i+1][6] = xPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
-			B[i+1][7] = yPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
-			B[i+1][8] = yPointPairs.get(counter).distorted;
-			counter++;
-		}
-		RealMatrix A = new Array2DRowRealMatrix(B);
-		RealMatrix At = A.transpose();
-		RealMatrix AtA = At.multiply(A);
-
-		EigenDecomposition ed = new EigenDecomposition(AtA);
-		RealMatrix V = ed.getV();
-	
-		double[][] pArray = new double[3][3];
-		
-		pArray[0][0]=V.getEntry(0,V.getRowDimension()-1);
-		pArray[0][1]=V.getEntry(1,V.getRowDimension()-1);
-		pArray[0][2]=V.getEntry(2,V.getRowDimension()-1);
-		
-		pArray[1][0]=V.getEntry(3,V.getRowDimension()-1);
-		pArray[1][1]=V.getEntry(4,V.getRowDimension()-1);
-		pArray[1][2]=V.getEntry(5,V.getRowDimension()-1);
-		
-		pArray[2][0]=V.getEntry(6,V.getRowDimension()-1);
-		pArray[2][1]=V.getEntry(7,V.getRowDimension()-1);
-		pArray[2][2]=V.getEntry(8,V.getRowDimension()-1);		
-	
-		RealMatrix pMat = new Array2DRowRealMatrix(pArray);
-	
-		for (int y = 0; y < targetImg.getHeight(); y++) {
-			for (int x = 0; x < targetImg.getWidth(); x++) {
-				double[] target  = {x,y,1};
-				RealVector t_vec = new ArrayRealVector(target, false);
-				RealVector coord_vec = pMat.operate(t_vec);
-				double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
-				double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
-			
-				if (x_coord_vorlage>=0 && x_coord_vorlage < targetImg.getWidth() && y_coord_vorlage>=0 && y_coord_vorlage < targetImg.getHeight()) {
-					targetImg.putPixel(x, y, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage , y_coord_vorlage)));
-				} 
-				else
-				{
-					targetImg.putPixel(x, y, 0);
-				}
-			}
-		}
-		
-		for (int i = 0; i < xPointPairs.size(); i++) {
-			double[] target  = {xPointPairs.get(i).distorted,yPointPairs.get(i).distorted,1};
-			RealVector t_vec = new ArrayRealVector(target, false);
-			RealVector coord_vec = pMat.operate(t_vec);
-			double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
-			double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
-			xPointPairs.get(i).distorted = x_coord_vorlage;
-			yPointPairs.get(i).distorted = y_coord_vorlage;
-		}
-
-		drawTargets(targetImg, "Projective Transformation", xPointPairs, yPointPairs);
-		return new ImagePlus("Projected Image",targetImg);
-	}
-
-
+//	public static ImagePlus computeDrawPerpectiveTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs){
+//		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
+//	
+//		double[][]B = new double[xPointPairs.size()*2][9];
+//		int counter = 0;
+//		for (int i = 0; i < B.length; i+=2) {
+//			
+//			B[i][0] = -xPointPairs.get(counter).undistorted;
+//			B[i][1] = -yPointPairs.get(counter).undistorted;
+//			B[i][2] = -1.;
+//			B[i][3] = 0.;
+//			B[i][4] = 0.;
+//			B[i][5] = 0.;
+//			B[i][6] = xPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
+//			B[i][7] = yPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
+//			B[i][8] = xPointPairs.get(counter).distorted;
+//			B[i+1][0] = 0.;
+//			B[i+1][1] = 0.;
+//			B[i+1][2] = 0.;
+//			B[i+1][3] = -xPointPairs.get(counter).undistorted;
+//			B[i+1][4] = -yPointPairs.get(counter).undistorted;
+//			B[i+1][5] = -1.;
+//			B[i+1][6] = xPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
+//			B[i+1][7] = yPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
+//			B[i+1][8] = yPointPairs.get(counter).distorted;
+//			counter++;
+//		}
+//		RealMatrix A = new Array2DRowRealMatrix(B);
+//		RealMatrix At = A.transpose();
+//		RealMatrix AtA = At.multiply(A);
+//
+//		EigenDecomposition ed = new EigenDecomposition(AtA);
+//		RealMatrix V = ed.getV();
+//	
+//		double[][] pArray = new double[3][3];
+//		
+//		pArray[0][0]=V.getEntry(0,V.getRowDimension()-1);
+//		pArray[0][1]=V.getEntry(1,V.getRowDimension()-1);
+//		pArray[0][2]=V.getEntry(2,V.getRowDimension()-1);
+//		
+//		pArray[1][0]=V.getEntry(3,V.getRowDimension()-1);
+//		pArray[1][1]=V.getEntry(4,V.getRowDimension()-1);
+//		pArray[1][2]=V.getEntry(5,V.getRowDimension()-1);
+//		
+//		pArray[2][0]=V.getEntry(6,V.getRowDimension()-1);
+//		pArray[2][1]=V.getEntry(7,V.getRowDimension()-1);
+//		pArray[2][2]=V.getEntry(8,V.getRowDimension()-1);		
+//	
+//		RealMatrix pMat = new Array2DRowRealMatrix(pArray);
+//	
+//		for (int y = 0; y < targetImg.getHeight(); y++) {
+//			for (int x = 0; x < targetImg.getWidth(); x++) {
+//				double[] target  = {x,y,1};
+//				RealVector t_vec = new ArrayRealVector(target, false);
+//				RealVector coord_vec = pMat.operate(t_vec);
+//				double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
+//				double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
+//			
+//				if (x_coord_vorlage>=0 && x_coord_vorlage < targetImg.getWidth() && y_coord_vorlage>=0 && y_coord_vorlage < targetImg.getHeight()) {
+//					targetImg.putPixel(x, y, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage , y_coord_vorlage)));
+//				} 
+//				else
+//				{
+//					targetImg.putPixel(x, y, 0);
+//				}
+//			}
+//		}
+//		
+//		for (int i = 0; i < xPointPairs.size(); i++) {
+//			double[] target  = {xPointPairs.get(i).distorted,yPointPairs.get(i).distorted,1};
+//			RealVector t_vec = new ArrayRealVector(target, false);
+//			RealVector coord_vec = pMat.operate(t_vec);
+//			double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
+//			double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
+//			xPointPairs.get(i).distorted = x_coord_vorlage;
+//			yPointPairs.get(i).distorted = y_coord_vorlage;
+//		}
+//
+//		drawTargets(targetImg, "Projective Transformation", xPointPairs, yPointPairs);
+//		return new ImagePlus("Projected Image",targetImg);
+//	}
+//
+//
 
 
 	/**
@@ -273,28 +273,44 @@ public class RadialDistortion_ implements PlugInFilter {
 	 */
 	public static void computeDrawRadialTransformation(ImagePlus sourcePicture, ArrayList<PointPair>pairs) {
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
-
+		 double[] xCoeffs = new double [3];
+		 double[] yCoeffs = new double [3];
 		double xCenter = sourcePicture.getProcessor().getWidth() / 2;
 		double yCenter = sourcePicture.getProcessor().getHeight() / 2;
 
+		System.out.println("Starting X Coeff Estimation ....");
+		
+		
 		 // the model function components are the distances to current estimated center,
 		 // they should be as close as possible to the specified radius
-		 MultivariateJacobianFunction distancesToCurrentCenter = new MultivariateJacobianFunction() {
-		      public Pair<RealVector, RealMatrix> value(final RealVector point) {
+		 MultivariateJacobianFunction modelX = new MultivariateJacobianFunction() {
+		      public Pair<RealVector, RealMatrix> value(final RealVector coeffs) {
 
-		          Vector2D center = new Vector2D(point.getEntry(0), point.getEntry(1));
+		          RealVector value = new ArrayRealVector(pairs.size());
+		          RealMatrix jacobian = new Array2DRowRealMatrix(pairs.size(), 3);
 
-		          RealVector value = new ArrayRealVector(observedPoints.length);
-		          RealMatrix jacobian = new Array2DRowRealMatrix(observedPoints.length, 2);
-
-		          for (int i = 0; i < observedPoints.length; ++i) {
-		              Vector2D o = observedPoints[i];
-		              double modelI = Vector2D.distance(o, center);
-		              value.setEntry(i, modelI);
-		              // derivative with respect to p0 = x center
-		              jacobian.setEntry(i, 0, (center.getX() - o.getX()) / modelI);
-		              // derivative with respect to p1 = y center
-		              jacobian.setEntry(i, 1, (center.getX() - o.getX()) / modelI);
+		          for (int i = 0; i < pairs.size(); ++i) {
+		        	  PointPair pp = pairs.get(i);
+		              double val = (1. + coeffs.getEntry(0)* pp.r * pp.r 
+		            		  + coeffs.getEntry(1) * pp.r * pp.r * pp.r * pp.r
+		            		  + coeffs.getEntry(1)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
+		            		  * pp.x_dist-pp.x_undist;
+		              
+		              value.setEntry(i, val);
+		              
+		            //0 = (1 + a*r^2 + b*r^4 + c*r^6) * x - x'
+			        	//dx'/da = r^2*x
+			        	//dx'/db = r^4*x
+			        	//dx'/dc = r^6*x
+			        	
+			        	
+			          double j0 = Math.pow(pp.r, 2.00) * pp.x_dist; 
+			          double j1 = Math.pow(pp.r, 4.00) * pp.x_dist; 
+			          double j2 = Math.pow(pp.r, 6.00) * pp.x_dist;
+		              
+		              jacobian.setEntry(i, 0, j0);
+		              jacobian.setEntry(i, 1, j1);
+		              jacobian.setEntry(i, 2, j2);
 		          }
 
 		          return new Pair<RealVector, RealMatrix>(value, jacobian);
@@ -302,25 +318,136 @@ public class RadialDistortion_ implements PlugInFilter {
 		      }
 		  };
 
-		  // the target is to have all points at the specified radius from the center
-		  double[] prescribedDistances = new double[observedPoints.length];
-		  Arrays.fill(prescribedDistances, radius);
+		  double[] targetsX = new double[pairs.size()];
+		  for (int i = 0; i < pairs.size(); i++) {
+			targetsX[i]=pairs.get(i).x_undist;
+		}
 
 		  // least squares problem to solve : modeled radius should be close to target radius
-		  LeastSquaresProblem problem = new LeastSquaresBuilder().
-		                                start(new double[] { 100.0, 50.0 }).
-		                                model(distancesToCurrentCenter).
-		                                target(prescribedDistances).
+		  LeastSquaresProblem problemX = new LeastSquaresBuilder().
+		                                start(new double[] { 1.e-10, 1.e-10,1.e-10 }).
+		                                model(modelX).
+		                                target(targetsX).
 		                                lazyEvaluation(false).
 		                                maxEvaluations(1000).
 		                                maxIterations(1000).
 		                                build();
-		  LeastSquaresOptimizer.Optimum optimum = new LevenbergMarquardtOptimizer().optimize(problem);
-		  Vector2D fittedCenter = new Vector2D(optimum.getPoint().getEntry(0), optimum.getPoint().getEntry(1));
-		  System.out.println("fitted center: " + fittedCenter.getX() + " " + fittedCenter.getY());
-		  System.out.println("RMS: "           + optimum.getRMS());
-		  System.out.println("evaluations: "   + optimum.getEvaluations());
-		  System.out.println("iterations: "    + optimum.getIterations());
+		  LeastSquaresOptimizer.Optimum optimumX = new LevenbergMarquardtOptimizer().optimize(problemX);
+		  xCoeffs[0] = optimumX.getPoint().getEntry(0);
+		  xCoeffs[1] = optimumX.getPoint().getEntry(1);
+		  xCoeffs[2] = optimumX.getPoint().getEntry(2);
+		  System.out.println("xCoeffs: " + xCoeffs[0] + " " +  xCoeffs[1]+" "+  xCoeffs[2]);
+		  System.out.println("RMS: "           + optimumX.getRMS());
+		  System.out.println("evaluations: "   + optimumX.getEvaluations());
+		  System.out.println("iterations: "    + optimumX.getIterations());
+		  
+		  
+		  //-----------------------------------------------------------------------------------------------------------------------------
+		  
+		  System.out.println("Starting Y Coeff Estimation ....");
+			
+			
+			 // the model function components are the distances to current estimated center,
+			 // they should be as close as possible to the specified radius
+			 MultivariateJacobianFunction modelY = new MultivariateJacobianFunction() {
+			      public Pair<RealVector, RealMatrix> value(final RealVector coeffs) {
+
+			          RealVector value = new ArrayRealVector(pairs.size());
+			          RealMatrix jacobian = new Array2DRowRealMatrix(pairs.size(), 3);
+
+			          for (int i = 0; i < pairs.size(); ++i) {
+			        	  PointPair pp = pairs.get(i);
+			              double val = (1. + coeffs.getEntry(0)* pp.r * pp.r 
+			            		  + coeffs.getEntry(1) * pp.r * pp.r * pp.r * pp.r
+			            		  + coeffs.getEntry(1)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
+			            		  * pp.y_dist-pp.y_undist;
+			              
+			              value.setEntry(i, val);
+			              
+			            //0 = (1 + a*r^2 + b*r^4 + c*r^6) * x - x'
+				        	//dx'/da = r^2*x
+				        	//dx'/db = r^4*x
+				        	//dx'/dc = r^6*x
+				        	
+				        	
+				          double j0 = Math.pow(pp.r, 2.00) * pp.y_dist; 
+				          double j1 = Math.pow(pp.r, 4.00) * pp.y_dist; 
+				          double j2 = Math.pow(pp.r, 6.00) * pp.y_dist;
+			              
+			              jacobian.setEntry(i, 0, j0);
+			              jacobian.setEntry(i, 1, j1);
+			              jacobian.setEntry(i, 2, j2);
+			          }
+
+			          return new Pair<RealVector, RealMatrix>(value, jacobian);
+
+			      }
+			  };
+
+			  double[] targetsY = new double[pairs.size()];
+			  for (int i = 0; i < pairs.size(); i++) {
+				targetsY[i]=pairs.get(i).y_undist;
+			}
+
+			  // least squares problem to solve : modeled radius should be close to target radius
+			  LeastSquaresProblem problemY = new LeastSquaresBuilder().
+			                                start(new double[] { 1.e-10, 1.e-10,1.e-10 }).
+			                                model(modelY).
+			                                target(targetsY).
+			                                lazyEvaluation(false).
+			                                maxEvaluations(1000).
+			                                maxIterations(1000).
+			                                build();
+			  LeastSquaresOptimizer.Optimum optimumY = new LevenbergMarquardtOptimizer().optimize(problemY);
+			  yCoeffs[0] = optimumY.getPoint().getEntry(0);
+			  yCoeffs[1] = optimumY.getPoint().getEntry(1);
+			  yCoeffs[2] = optimumY.getPoint().getEntry(2);
+			  System.out.println("xCoeffs: " + yCoeffs[0] + " " +  yCoeffs[1]+" "+  yCoeffs[2]);
+			  System.out.println("RMS: "           + optimumY.getRMS());
+			  System.out.println("evaluations: "   + optimumY.getEvaluations());
+			  System.out.println("iterations: "    + optimumY.getIterations());
+			  
+			  //-----------------------------------------------------------------------------------------------------------------------
+			  
+			// Pixel Werte für neues Bild berechnen nach dem "target to source"
+				// Verfahren
+				for (int y = 0; y < sourcePicture.getHeight(); y++) {
+					for (int x = 0; x < sourcePicture.getWidth(); x++) {
+						// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
+
+						double radius2Center = computeRadius2Center(x, y, xCenter, yCenter);
+	
+						
+						double x_distorted = (1./(1. + xCoeffs[0] * Math.pow(radius2Center, 2.00)
+								+ xCoeffs[1] * Math.pow(radius2Center, 4.00) + xCoeffs[2] * Math.pow(radius2Center, 6.00))
+								* x);
+
+						double y_distorted = (1./ (1. + yCoeffs[0] * Math.pow(radius2Center, 2.00)
+								+ yCoeffs[1] * Math.pow(radius2Center, 4.00) + yCoeffs[2] * Math.pow(radius2Center, 6.00))
+								* y);
+
+						sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
+						if (x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight()) {
+							targetImg.putPixel(x, y, (int) Math
+									.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
+						}
+					}
+				}
+				
+				// Punkte berechnen nach radialer entzerrung zur weiteren bearbeitung (optional):
+				for (int i = 0; i < pairs.size(); i++) {
+					PointPair pp = pairs.get(i);
+
+					pp.x_dist = (1. / (1. + xCoeffs[0] * Math.pow(pp.r, 2.00)
+							+ xCoeffs[1] * Math.pow(pp.r, 4.00) + xCoeffs[2] * Math.pow(pp.r, 6.00))
+							* pp.x_dist);
+
+					pp.y_dist = (1. / (1. + yCoeffs[0] * Math.pow(pp.r, 2.00)
+							+ yCoeffs[1] * Math.pow(pp.r, 4.00) + yCoeffs[2] * Math.pow(pp.r, 6.00))
+							* pp.y_dist);
+
+				}			
+	  drawTargets(targetImg, "Radial", pairs);
 	}
 
 	/**
@@ -330,19 +457,18 @@ public class RadialDistortion_ implements PlugInFilter {
 	 * @param xPointPairs x-Koordinaten 
 	 * @param yPointPairs y-Koordinaten
 	 */
-	public static void drawTargets(ImageProcessor ip, String s, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
+	public static void drawTargets(ImageProcessor ip, String s, List<PointPair> pairs) {
 		// Punkte in radial entzerrtes Bild malen
 		ImageProcessor res = ip.duplicate();
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
-//		for (int i = 0; i < xPointPairs.size(); i++) {
-//
-//			res.setColor(Color.BLACK);
-//			res.drawOval((int) xPointPairs.get(i).undistorted, (int) yPointPairs.get(i).undistorted, 3, 3);
-//			res.setColor(Color.GRAY);
-//			res.drawOval((int) xPointPairs.get(i).distorted, (int) yPointPairs.get(i).distorted, 3, 3);
-//
-//		}
+		for (int i = 0; i < pairs.size(); i++) {
+			PointPair pp = pairs.get(i);
+			res.setColor(Color.BLACK);
+			res.drawOval((int) pp.x_undist, (int) pp.y_undist, 3, 3);
+			res.setColor(Color.GRAY);
+			res.drawOval((int) pp.x_dist, (int) pp.y_dist, 3, 3);
+		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
 		resImg.show();
@@ -350,129 +476,7 @@ public class RadialDistortion_ implements PlugInFilter {
 	}
 
 
-	/**
-	 * Berechnet und zeichnet die Affine entzerrung anhand der x und y Punkt paare
-	 * Die X und Y Arrays müssen eine zusammengehörige Reihenfolge haben
-	 * @param xPointPairs Vorlage und Ziel-Koorinaten der x-Achse
-	 * @param yPointPairs Vorlage und Ziel-Koorinaten der y-Achse
-	 * @return Affiner Verzerrungsvektor p
-	 */
-	public static ImagePlus computeDrawAffineTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
-
-		/// Verschiebungsvektor und matrix berechnen
-
-		// Minimum von B*p -c;
-		double[][] B = new double[2 * xPointPairs.size()][6];// Matrix B =
-		// koordinaten
-		// vorlage
-		// double[] p;//p = geschter verschiebungsmatrix und vektor
-		double[] c = new double[2 * xPointPairs.size()];// c = koordinaten
-		// transformiert
-
-		// konstruiert man die (2n,6) -Matrix
-		for (int i = 0; i < xPointPairs.size(); i++) {
-			// i = 0 => 0,1 => i *2, i*2+1
-			// i = 1 => 2,3
-			// i = 2 => 4,5
-			// i = 3 => 6,7
-
-			//
-			c[i * 2] = xPointPairs.get(i).undistorted;// x_i'
-			c[i * 2 + 1] = yPointPairs.get(i).undistorted; // y_i'
-
-			B[i * 2][0] = xPointPairs.get(i).distorted; // x_i
-			B[i * 2][1] = yPointPairs.get(i).distorted; // y_i
-			B[i * 2][2] = 1;
-			B[i * 2][3] = 0;
-			B[i * 2][4] = 0;
-			B[i * 2][5] = 0;
-
-			B[i * 2 + 1][0] = 0;
-			B[i * 2 + 1][1] = 0;
-			B[i * 2 + 1][2] = 0;
-			B[i * 2 + 1][3] = xPointPairs.get(i).distorted; // x_i
-			B[i * 2 + 1][4] = yPointPairs.get(i).distorted; // y_i
-			B[i * 2 + 1][5] = 1;
-		}
-
-		// B*p = c => p = (Bt * B)^-1 * Bt * c
-
-		RealVector c_vec = new ArrayRealVector(c, false);
-		RealMatrix B_mat = MatrixUtils.createRealMatrix(B);
-
-		// Bt
-		RealMatrix B_mat_transp = B_mat.transpose();
-
-		// Bt * B
-		RealMatrix Bt_B = B_mat_transp.multiply(B_mat);
-
-		// (Bt * B)^-1
-		RealMatrix Bt_B_inv = MatrixUtils.inverse(Bt_B);
-
-		// (Bt * B)^-1 * Bt * c
-		RealVector p = Bt_B_inv.operate(B_mat_transp.operate(c_vec));
-
-		double[] verschiebungsmatrix = new double[] { p.getEntry(0), p.getEntry(1), p.getEntry(3), p.getEntry(4) };
-		double[] verschiebungsvektor = new double[] { p.getEntry(2), p.getEntry(5) };
-		double[][] verzerrungsmatrix = { { verschiebungsmatrix[0], verschiebungsmatrix[1], verschiebungsvektor[0] },
-				{ verschiebungsmatrix[2], verschiebungsmatrix[3], verschiebungsvektor[1] }, { 0, 0, 1 } };
-
-		IJ.log("a11: " + verschiebungsmatrix[0] + " a12: " + verschiebungsmatrix[1] + " a21: " + verschiebungsmatrix[2]
-				+ " a22: " + verschiebungsmatrix[3] + " t1: " + verschiebungsvektor[0] + " t2: "
-				+ verschiebungsvektor[1]);
-
-		// Berechnen Sie aus den Werten die Umkehrabbildung,
-
-		// erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild
-		ImageProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
-
-		// berechnen Sie es nach dem Target-to-Source-Verfahren,
-		// d.h.berechnen Sie zu jedem Punkt im neuen Bild durch die
-		// Umkehrabbildung die Koordinaten im
-		// Eingangsbild und holen Sie von dort den Wert des Pixels. Eine
-		// Interpolation wird nicht verlangt.
-
-		RealMatrix Bi_mat = MatrixUtils.createRealMatrix(verzerrungsmatrix);
-		DecompositionSolver Bi_mat_solver = new LUDecomposition(Bi_mat).getSolver();
-
-		// zielbild durchlaufen und werde aus vorlagebild abrufen
-		for (int y = 0; y < targetImg.getHeight(); y++) {
-			for (int x = 0; x < targetImg.getWidth(); x++) {
-				double[] t_h = { x, y, 1 };
-				RealVector t_vec = new ArrayRealVector(t_h, false);
-				RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
-				// berechnen
-
-				int x_coord_vorlage = (int) Math.round(coord_vec.getEntry(0));
-				int y_coord_vorlage = (int) Math.round(coord_vec.getEntry(1));
-
-				if (x_coord_vorlage>=0 && x_coord_vorlage < targetImg.getWidth() && y_coord_vorlage>=0 && y_coord_vorlage < targetImg.getHeight()) {
-					targetImg.putPixel(x, y, (int) Math.round(
-							sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage, y_coord_vorlage)));
-				} else // mit schwarz auffüllen
-				{
-					targetImg.putPixel(x, y, 0);
-				}
-			}
-		}
-
-		drawTargets(targetImg, "Affine", xPointPairs, yPointPairs);
-		
-		//Tranformation auf Punkt paare anwenden zur weiteren verwendung
-		for (int i = 0; i < xPointPairs.size(); i++) {
-			double[] t_h = { xPointPairs.get(i).distorted, yPointPairs.get(i).distorted, 1 };
-			RealVector t_vec = new ArrayRealVector(t_h, false);
-			RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
-																				// berechnen
-			xPointPairs.get(i).distorted = coord_vec.getEntry(0);
-			yPointPairs.get(i).distorted = coord_vec.getEntry(1);
-		}
-
-		return new ImagePlus ("Affine",targetImg);
-
-	}
-
-
+	
 	/**
 	 * Berechnet den Abstand zum Gittermittelpunkt
 	 * @param x x-Koordinate des Punktes
@@ -485,51 +489,7 @@ public class RadialDistortion_ implements PlugInFilter {
 		return Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
 	}
 
-	/**
-	 * 
-	 * @param punkt_paare Array mit SimplePair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
-	 * @return Koefizienten der Radialen-Verzerrung nach Levenberg-Marquadt
-	 */
-	public static double[] compute_radial_dist_koeff(List<SimplePair> punkt_paare) {
-		RadialDistFunction qf = new RadialDistFunction(punkt_paare);
-		LeastSquaresBuilder lsb = new LeastSquaresBuilder();
-
-		// set model function and its jacobian
-		lsb.model(qf.retMVF(), qf.retMMF());
-		double[] newTarget = qf.realTargetPoints();
-
-		// set target data
-		lsb.target(newTarget);
-		double[] newStart = { 1.e-15, 1.e-15, 1.e-15 };
-		// set initial parameters
-		lsb.start(newStart);
-		// set upper limit of evaluation time
-		lsb.maxEvaluations(9000);
-		// set upper limit of iteration time
-		lsb.maxIterations(20000);
-
-		LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer();
-		try {
-			// do LevenbergMarquardt optimization
-			LeastSquaresOptimizer.Optimum lsoo = lmo.optimize(lsb.build());
-
-			// get optimized parameters
-			final double[] optimalValues = lsoo.getPoint().toArray();
-			// output data
-			IJ.log("A: " + optimalValues[0]);
-			IJ.log("B: " + optimalValues[1]);
-			IJ.log("C: " + optimalValues[2]);
-			IJ.log("Iteration number: " + lsoo.getIterations());
-			IJ.log("Evaluation number: " + lsoo.getEvaluations());
-
-			return optimalValues;
-
-		} catch (Exception e) {
-			System.out.println(e.toString());
-			return null;
-		}
-
-	}
+	
 
 	@Override
 	/**

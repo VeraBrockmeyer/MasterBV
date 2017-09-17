@@ -9,7 +9,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import ij.IJ;
 
 /**
- * Klasse für den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
+ * Klasse fï¿½r den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
  * @author 
  *
  */
@@ -18,7 +18,7 @@ public class RadialDistFunction
 {
 
 	/**
-	 * Interner Speicher für die Punkt-Paare
+	 * Interner Speicher fï¿½r die Punkt-Paare
 	 */
 	List<SimplePair> _pointPairs =  new ArrayList<SimplePair>();
 	
@@ -32,23 +32,23 @@ public class RadialDistFunction
 	}
 	
     /**
-     * Gibt die Ziel-Punkt-Koordinaten als double Array aus für den LevenbergMarquadt Optimierer
+     * Gibt die Ziel-Punkt-Koordinaten als double Array aus fï¿½r den LevenbergMarquadt Optimierer
      * @return target	double array mit den ZielKoordinaten 
      */
     public double[] realTargetPoints() 
     {
-        double[] target = new double[_pointPairs.size()]; //Speicher für ZielKoordinaten
+        double[] target = new double[_pointPairs.size()]; //Speicher fï¿½r ZielKoordinaten
         
         for (int i = 0; i < _pointPairs.size(); i++) 
         {
-            target[i] = _pointPairs.get(i).undistorted; //zielwerte x
+            target[i] = _pointPairs.get(i).target; //zielwerte x
         }
         
         return target;
     }
     
     /**
-     * Ezeugt die Verzerrungs-Funktion für den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
+     * Ezeugt die Verzerrungs-Funktion fï¿½r den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
      * @return	Verzerrungs-Funktion in der zu den Keffizienten die Ziel-Werte berechnet werden
      */
     public MultivariateVectorFunction retMVF() 
@@ -64,19 +64,18 @@ public class RadialDistFunction
 		        //x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
 		        for (int i = 0; i < _pointPairs.size(); ++i) 
 		        {
-		        	IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).distorted + " target " + _pointPairs.get(i).undistorted );
+		        	IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).source + " target " + _pointPairs.get(i).target );
 		        	
 		        	//radiale verzerrung in x-richtung:
-		        	calculated_target_points[i] =  _pointPairs.get(i).distorted 
-		        			/(1 
+		        	calculated_target_points[i] = (1 
 		        			+ radial_dist_coeff[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
 		        			+ radial_dist_coeff[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
 		        			+ radial_dist_coeff[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
-		        			);
+		        			) * _pointPairs.get(i).source - _pointPairs.get(i).target;
 		        	
 //		        
 		        	
-		        	 IJ.log(String.format("Calculated values: target = %f target_cal = %f ;", _pointPairs.get(i).undistorted,calculated_target_points[i])); 			           		 		
+		        	 IJ.log(String.format("Calculated values: target = %f target_cal = %f ;", _pointPairs.get(i).target,calculated_target_points[i])); 			           		 		
 		        }
 		        
 		        return calculated_target_points;
@@ -119,21 +118,11 @@ public class RadialDistFunction
 		        	//dx'/da = r^2*x
 		        	//dx'/db = r^4*x
 		        	//dx'/dc = r^6*x
-		        	double r2 = Math.pow(_pointPairs.get(i).radius, 2.00);
-		        	double r4 = Math.pow(_pointPairs.get(i).radius, 4.00);
-		        	double r6 = Math.pow(_pointPairs.get(i).radius, 6.00);
-		        	double term1 = (1.+variables[0]*r2+variables[1]*r4+variables[2]*r6);
-		        	double term2 = -1.*(1/(term1*term1));
 		        	
 		        	
-		            jacobian[i][0] = _pointPairs.get(i).distorted*r2*term2 ; 
-		            jacobian[i][1] = _pointPairs.get(i).distorted*r4*term2 ; 
-		            jacobian[i][2] = _pointPairs.get(i).distorted*r6*term2 ; 
-		        	
-//		        	
-//		            jacobian[i][0] = Math.pow(_pointPairs.get(i).radius, 2.00)  * _pointPairs.get(i).distorted; 
-//		            jacobian[i][1] = Math.pow(_pointPairs.get(i).radius, 4.00)  * _pointPairs.get(i).distorted; 
-//		            jacobian[i][2] = Math.pow(_pointPairs.get(i).radius, 6.00)  * _pointPairs.get(i).distorted;
+		            jacobian[i][0] = Math.pow(_pointPairs.get(i).radius, 2.00)  * _pointPairs.get(i).source; 
+		            jacobian[i][1] = Math.pow(_pointPairs.get(i).radius, 4.00)  * _pointPairs.get(i).source; 
+		            jacobian[i][2] = Math.pow(_pointPairs.get(i).radius, 6.00)  * _pointPairs.get(i).source;
 		            
 //		         
 		            //IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+_pointPairs.size()][0],  jacobian[i+_pointPairs.size()][1],  jacobian[i+_pointPairs.size()][2])); 			           		 		

@@ -33,7 +33,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	/**
 	 * Speicher für das Vorlagenbild zum Abrufen der Pixel Werte zur Zeichnung der entzerrung
 	 */
-	private ImagePlus distortedPicture;
+	private ImagePlus sourcePicture;
 
 
 	/**
@@ -99,10 +99,10 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	public void run(ImageProcessor img) {
 		try {
 			readData();
-			drawTargets(distortedPicture.getProcessor(), "SourceImage", xPointPairs, yPointPairs);
+			drawTargets(sourcePicture.getProcessor(), "SourceImage", xPointPairs, yPointPairs);
 			//sourcePicture=computeDrawAffineTransformation(sourcePicture, xPointPairs, yPointPairs);
 			//sourcePicture=computeDrawPerpectiveTransformation(sourcePicture, xPointPairs, yPointPairs);
-			computeDrawRadialTransformation(distortedPicture, xPointPairs, yPointPairs);
+			computeDrawRadialTransformation(sourcePicture, xPointPairs, yPointPairs);
 
 		} catch (Exception exc) {
 			IJ.error(exc.getMessage() + exc.getClass() + exc.getCause() + exc.getStackTrace());
@@ -209,24 +209,24 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		int counter = 0;
 		for (int i = 0; i < B.length; i+=2) {
 			
-			B[i][0] = -xPointPairs.get(counter).undistorted;
-			B[i][1] = -yPointPairs.get(counter).undistorted;
+			B[i][0] = -xPointPairs.get(counter).target;
+			B[i][1] = -yPointPairs.get(counter).target;
 			B[i][2] = -1.;
 			B[i][3] = 0.;
 			B[i][4] = 0.;
 			B[i][5] = 0.;
-			B[i][6] = xPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
-			B[i][7] = yPointPairs.get(counter).undistorted*xPointPairs.get(counter).distorted;
-			B[i][8] = xPointPairs.get(counter).distorted;
+			B[i][6] = xPointPairs.get(counter).target*xPointPairs.get(counter).source;
+			B[i][7] = yPointPairs.get(counter).target*xPointPairs.get(counter).source;
+			B[i][8] = xPointPairs.get(counter).source;
 			B[i+1][0] = 0.;
 			B[i+1][1] = 0.;
 			B[i+1][2] = 0.;
-			B[i+1][3] = -xPointPairs.get(counter).undistorted;
-			B[i+1][4] = -yPointPairs.get(counter).undistorted;
+			B[i+1][3] = -xPointPairs.get(counter).target;
+			B[i+1][4] = -yPointPairs.get(counter).target;
 			B[i+1][5] = -1.;
-			B[i+1][6] = xPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
-			B[i+1][7] = yPointPairs.get(counter).undistorted*yPointPairs.get(counter).distorted;
-			B[i+1][8] = yPointPairs.get(counter).distorted;
+			B[i+1][6] = xPointPairs.get(counter).target*yPointPairs.get(counter).source;
+			B[i+1][7] = yPointPairs.get(counter).target*yPointPairs.get(counter).source;
+			B[i+1][8] = yPointPairs.get(counter).source;
 			counter++;
 		}
 		RealMatrix A = new Array2DRowRealMatrix(B);
@@ -271,13 +271,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 		
 		for (int i = 0; i < xPointPairs.size(); i++) {
-			double[] target  = {xPointPairs.get(i).distorted,yPointPairs.get(i).distorted,1};
+			double[] target  = {xPointPairs.get(i).source,yPointPairs.get(i).source,1};
 			RealVector t_vec = new ArrayRealVector(target, false);
 			RealVector coord_vec = pMat.operate(t_vec);
 			double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
 			double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
-			xPointPairs.get(i).distorted = x_coord_vorlage;
-			yPointPairs.get(i).distorted = y_coord_vorlage;
+			xPointPairs.get(i).source = x_coord_vorlage;
+			yPointPairs.get(i).source = y_coord_vorlage;
 		}
 
 		drawTargets(targetImg, "Projective Transformation", xPointPairs, yPointPairs);
@@ -305,38 +305,39 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// Pixel Werte für neues Bild berechnen nach dem "target to source"
 		// Verfahren
-		for (int y_distImg = 0; y_distImg < sourcePicture.getHeight(); y_distImg++) {
-			for (int x_distImg = 0; x_distImg < sourcePicture.getWidth(); x_distImg++) {
+		for (int y_target = 0; y_target < sourcePicture.getHeight(); y_target++) {
+			for (int x_target = 0; x_target < sourcePicture.getWidth(); x_target++) {
 				// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
 
-				double radius2Center = computeRadius2Center(x_distImg, y_distImg, xCenter, yCenter);
+				double radius2Center = computeRadius2Center(x_target, y_target, xCenter, yCenter);
 
-				double x_undistorted =(x_distImg*(1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
+				double x_distorted = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 						+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-						);
+						* x_target);
 
-				double y_undistorted = (y_distImg*(1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
+				double y_distorted = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
 						+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-						);
+						* y_target);
 
 				sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
-				if (x_undistorted < sourcePicture.getWidth() && y_undistorted < sourcePicture.getHeight()) {
-					targetImg.putPixel(x_distImg, y_distImg, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_undistorted, y_undistorted)));
+				if (x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight()) {
+					targetImg.putPixel(x_target, y_target, (int) Math
+							.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
 				}
 			}
 		}
 
 		// Punkte berechnen nach radialer entzerrung zur weiteren bearbeitung (optional):
 		for (int i = 0; i < xPointPairs.size(); i++) {
-			double radius2Center = computeRadius2Center(xPointPairs.get(i).distorted, yPointPairs.get(i).distorted, xCenter, yCenter);
+			double radius2Center = computeRadius2Center(xPointPairs.get(i).source, yPointPairs.get(i).source, xCenter, yCenter);
 
-			xPointPairs.get(i).distorted = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
+			xPointPairs.get(i).source = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 					+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-					* xPointPairs.get(i).distorted);
+					* xPointPairs.get(i).source);
 
-			yPointPairs.get(i).distorted = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
+			yPointPairs.get(i).source = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
 					+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-					* yPointPairs.get(i).distorted);
+					* yPointPairs.get(i).source);
 
 		}
 
@@ -355,14 +356,14 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		ImageProcessor res = ip.duplicate();
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
-//		for (int i = 0; i < xPointPairs.size(); i++) {
-//
-//			res.setColor(Color.BLACK);
-//			res.drawOval((int) xPointPairs.get(i).undistorted, (int) yPointPairs.get(i).undistorted, 3, 3);
-//			res.setColor(Color.GRAY);
-//			res.drawOval((int) xPointPairs.get(i).distorted, (int) yPointPairs.get(i).distorted, 3, 3);
-//
-//		}
+		for (int i = 0; i < xPointPairs.size(); i++) {
+
+			res.setColor(Color.WHITE);
+			res.drawOval((int) xPointPairs.get(i).target, (int) yPointPairs.get(i).target, 3, 3);
+			res.setColor(Color.GRAY);
+			res.drawOval((int) xPointPairs.get(i).source, (int) yPointPairs.get(i).source, 3, 3);
+
+		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
 		resImg.show();
@@ -397,11 +398,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			// i = 3 => 6,7
 
 			//
-			c[i * 2] = xPointPairs.get(i).undistorted;// x_i'
-			c[i * 2 + 1] = yPointPairs.get(i).undistorted; // y_i'
+			c[i * 2] = xPointPairs.get(i).target;// x_i'
+			c[i * 2 + 1] = yPointPairs.get(i).target; // y_i'
 
-			B[i * 2][0] = xPointPairs.get(i).distorted; // x_i
-			B[i * 2][1] = yPointPairs.get(i).distorted; // y_i
+			B[i * 2][0] = xPointPairs.get(i).source; // x_i
+			B[i * 2][1] = yPointPairs.get(i).source; // y_i
 			B[i * 2][2] = 1;
 			B[i * 2][3] = 0;
 			B[i * 2][4] = 0;
@@ -410,8 +411,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			B[i * 2 + 1][0] = 0;
 			B[i * 2 + 1][1] = 0;
 			B[i * 2 + 1][2] = 0;
-			B[i * 2 + 1][3] = xPointPairs.get(i).distorted; // x_i
-			B[i * 2 + 1][4] = yPointPairs.get(i).distorted; // y_i
+			B[i * 2 + 1][3] = xPointPairs.get(i).source; // x_i
+			B[i * 2 + 1][4] = yPointPairs.get(i).source; // y_i
 			B[i * 2 + 1][5] = 1;
 		}
 
@@ -480,12 +481,12 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		
 		//Tranformation auf Punkt paare anwenden zur weiteren verwendung
 		for (int i = 0; i < xPointPairs.size(); i++) {
-			double[] t_h = { xPointPairs.get(i).distorted, yPointPairs.get(i).distorted, 1 };
+			double[] t_h = { xPointPairs.get(i).source, yPointPairs.get(i).source, 1 };
 			RealVector t_vec = new ArrayRealVector(t_h, false);
 			RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
 																				// berechnen
-			xPointPairs.get(i).distorted = coord_vec.getEntry(0);
-			yPointPairs.get(i).distorted = coord_vec.getEntry(1);
+			xPointPairs.get(i).source = coord_vec.getEntry(0);
+			yPointPairs.get(i).source = coord_vec.getEntry(1);
 		}
 
 		return new ImagePlus ("Affine",targetImg);
@@ -520,7 +521,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// set target data
 		lsb.target(newTarget);
-		double[] newStart = { 1.e-15, 1.e-15, 1.e-15 };
+		double[] newStart = { .001, .001, .001 };
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
@@ -556,13 +557,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * Speichern des Voralge Bildes bei Aufruf des Plugins und erzeugung einer Kopie
 	 */
 	public int setup(String arg0, ImagePlus arg1) {
-		this.distortedPicture = arg1;
-		debug = distortedPicture.getProcessor().duplicate();
+		this.sourcePicture = arg1;
+		debug = sourcePicture.getProcessor().duplicate();
 		debug.setLineWidth(2);
 		debug.setColor(Color.WHITE);
 
-		xCenter = distortedPicture.getProcessor().getWidth() / 2;
-		yCenter = distortedPicture.getProcessor().getHeight() / 2;
+		xCenter = sourcePicture.getProcessor().getWidth() / 2;
+		yCenter = sourcePicture.getProcessor().getHeight() / 2;
 		return DOES_ALL;
 	}
 }
