@@ -18,4 +18,4 @@ open("F:\\Master\\BV\\git\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\testimage
 
 open("F:\\Master\\BV\\git\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\testimage.txt");
 
-run("point grid radial affin distor ");
+run("RadialDistortion ");

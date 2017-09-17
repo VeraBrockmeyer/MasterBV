@@ -1,10 +1,14 @@
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
@@ -13,6 +17,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Pair;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -28,23 +33,12 @@ import ij.process.ShortProcessor;
  * @author Artjom Schwabski
  *
  */
-public class point_grid_radial_affin_distor_ implements PlugInFilter {
+public class RadialDistortion_ implements PlugInFilter {
 
 	/**
 	 * Speicher für das Vorlagenbild zum Abrufen der Pixel Werte zur Zeichnung der entzerrung
 	 */
-	private ImagePlus distortedPicture;
-
-
-	/**
-	 * Speicher für die x-Koordinate des Gitter-Mittelpunktes
-	 */
-	private int xCenter = 1084;// 970;//
-
-	/**
-	 * Speicher für die y-Koordinate des Gitter-Mittelpunktes
-	 */
-	private int yCenter = 713;// 652;//
+	private ImagePlus distPicture;
 
 	/**
 	 * Abstand der Gitter-Kreuzpunkte in pxl (zur Berechung des optimalen Gitters)
@@ -71,25 +65,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	private static final int nRow = 13;
 
-	/**
-	 * 
-	 */
-	private ImagePlus debugImg;
+	
 
-	/**
-	 * 
-	 */
-	private ImageProcessor debug;
-
-	/**
-	 * Speicher für Koorinaten Paare der x-Achse
-	 */
-	private ArrayList<SimplePair> xPointPairs = new ArrayList<SimplePair>();
-
-	/**
-	 * Speicher für Koorinaten Paare der y-Achse
-	 */
-	private ArrayList<SimplePair> yPointPairs = new ArrayList<SimplePair>();
 
 
 	@Override
@@ -98,11 +75,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	public void run(ImageProcessor img) {
 		try {
-			readData();
-			drawTargets(distortedPicture.getProcessor(), "SourceImage", xPointPairs, yPointPairs);
+			ArrayList<PointPair> PointPairs = readData();
+			computeDrawRadialTransformation(distPicture, PointPairs);
+			//drawTargets(distPicture.getProcessor(), "SourceImage",PointPairs);
 			//sourcePicture=computeDrawAffineTransformation(sourcePicture, xPointPairs, yPointPairs);
 			//sourcePicture=computeDrawPerpectiveTransformation(sourcePicture, xPointPairs, yPointPairs);
-			computeDrawRadialTransformation(distortedPicture, xPointPairs, yPointPairs);
 
 		} catch (Exception exc) {
 			IJ.error(exc.getMessage() + exc.getClass() + exc.getCause() + exc.getStackTrace());
@@ -114,7 +91,12 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * Öffnet die Auswahl eines Textfensters und lädt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
 	 * Zusätzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswählen zu können
 	 */
-	private void readData() {
+	private ArrayList<PointPair> readData() {
+
+		int xCenter = distPicture.getProcessor().getWidth() / 2;
+		int yCenter = distPicture.getProcessor().getHeight() / 2;
+		
+		ArrayList<PointPair> pairs = new ArrayList<PointPair>();
 		// Textfenster mit Punktpaare Textdtei wählen:
 		java.awt.Window[] non_img_windows = WindowManager.getAllNonImageWindows();
 		GenericDialog gd = new GenericDialog("Textdatei auswählen:");
@@ -123,7 +105,6 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			if (non_img_windows[i] instanceof ij.plugin.frame.Editor) {
 				Windows_names[i] = ((ij.plugin.frame.Editor) non_img_windows[i]).getTitle();
 			}
-
 		}
 
 		String choise = "";
@@ -133,7 +114,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// abbrechen wenn keine eingabe:
 		if (gd.wasCanceled())
-			return;
+			return null;
 		choise = gd.getNextChoice();
 
 		// Punktpaare einlesen:
@@ -153,52 +134,49 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 					String[] numbers = lines[j].split("\t"); // spalte zeile
 					// anhand des
 					// tab zeichens
+					
+					double x_dist = Integer.parseInt(numbers[1].trim());
+					double y_dist = Integer.parseInt(numbers[2].trim());
+					
+					double x_undist = Integer.parseInt(numbers[3].trim());
+					double y_undist = Integer.parseInt(numbers[4].trim());
+					
+					int index = Integer.parseInt(numbers[0].trim());
 
-					SimplePair xPair = new SimplePair(Integer.parseInt(numbers[1].trim()), // x
-							// source
-							Integer.parseInt(numbers[3].trim()), // x' target
-							Math.sqrt((Integer.parseInt(numbers[1].trim()) - xCenter)
-									* (Integer.parseInt(numbers[1].trim()) - xCenter)
-									+ (Integer.parseInt(numbers[2].trim()) - yCenter)
-									* (Integer.parseInt(numbers[2].trim()) - yCenter)),
-							Integer.parseInt(numbers[0].trim()));// Index );
+					PointPair pp = new PointPair(x_dist, y_dist, x_undist, y_undist);
+					pp.r=pp.computeRadius2Center(x_dist, y_dist, xCenter, yCenter);
 
-					SimplePair yPair = new SimplePair(Integer.parseInt(numbers[2].trim()), // y
-							// source
-							Integer.parseInt(numbers[4].trim()), // y' target
-							Math.sqrt((Integer.parseInt(numbers[1].trim()) - xCenter)
-									* (Integer.parseInt(numbers[1].trim()) - xCenter)
-									+ (Integer.parseInt(numbers[2].trim()) - yCenter)
-									* (Integer.parseInt(numbers[2].trim()) - yCenter)),
-							Integer.parseInt(numbers[0].trim()));// Index );
+					
 					//
 					// //berechne x_target und y_target und gebe sie aus - NUR
 					// zur einmaligen generierung der Pointpairs:
-					// int colid = (int)(xPair.index / nRow); // 0 - 8 reihe
-					// int rowid = (int)(yPair.index - colid * nRow) ; // 0- 15
-					// spalte
-					//
-					// int x_offset = xCenter - nXCross2Corner * distCross;
-					// //koorinate mittelpunkt gitter - anzahl der gitterpunkte
-					// nach links
-					// int y_offset = yCenter - nYCross2Corner * distCross;
-					// //koorinate mittelpunkt gitter - anzahl der gitterpunkte
-					// nach oben
-					//
-					// xPair.target = colid * distCross+ x_offset;
-					// yPair.target = rowid * distCross + y_offset;
-					//
-					// debug.drawOval((int)xPair.target, (int)yPair.target, 3,
-					// 3);
-
-					xPointPairs.add(xPair);
-					yPointPairs.add(yPair);
+//					 int colid = (int)(index / nRow); // 0 - 8 reihe
+//					 int rowid = (int)(index - colid * nRow) ; // 0- 15 spalte
+//					
+//					 int x_offset = xCenter - nXCross2Corner * distCross;
+//					 //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach links
+//					 int y_offset = yCenter - nYCross2Corner * distCross;
+//					 //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach oben
+//					
+//					 pp.x_undist = colid * distCross+ x_offset;
+//					 pp.y_undist = rowid * distCross + y_offset;
+//					
+//					 ImageProcessor debug = distPicture.getProcessor().duplicate();
+//					 debug.drawOval((int)pp.x_undist, (int)pp.y_undist, 3,3);
+//
+					pairs.add(pp);
 
 				}
 
 			}
 		}
-
+		System.out.println("Read Data List");
+		System.out.println("index \t x_dist \t y_dist \t x_undist \t y_undist \t radius \n");
+		for (int j = 0; j < pairs.size(); j++) {
+			PointPair p = pairs.get(j);
+			System.out.println(""+j+"\t"+p.x_dist+"\t"+p.y_dist+"\t"+p.x_undist+"\t"+p.y_undist+"\t"+p.r);
+		}
+		return pairs;
 	}
 
 
@@ -293,54 +271,56 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * @param xPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
 	 * @param yPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
 	 */
-	public static void computeDrawRadialTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs) {
+	public static void computeDrawRadialTransformation(ImagePlus sourcePicture, ArrayList<PointPair>pairs) {
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 
 		double xCenter = sourcePicture.getProcessor().getWidth() / 2;
 		double yCenter = sourcePicture.getProcessor().getHeight() / 2;
 
-		// radiale entzerrung berechnen
-		double[] y_koeff = compute_radial_dist_koeff(yPointPairs);
-		double[] x_koeff = compute_radial_dist_koeff(xPointPairs);
+		 // the model function components are the distances to current estimated center,
+		 // they should be as close as possible to the specified radius
+		 MultivariateJacobianFunction distancesToCurrentCenter = new MultivariateJacobianFunction() {
+		      public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
-		// Pixel Werte für neues Bild berechnen nach dem "target to source"
-		// Verfahren
-		for (int y_distImg = 0; y_distImg < sourcePicture.getHeight(); y_distImg++) {
-			for (int x_distImg = 0; x_distImg < sourcePicture.getWidth(); x_distImg++) {
-				// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
+		          Vector2D center = new Vector2D(point.getEntry(0), point.getEntry(1));
 
-				double radius2Center = computeRadius2Center(x_distImg, y_distImg, xCenter, yCenter);
+		          RealVector value = new ArrayRealVector(observedPoints.length);
+		          RealMatrix jacobian = new Array2DRowRealMatrix(observedPoints.length, 2);
 
-				double x_undistorted =(x_distImg*(1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
-						+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-						);
+		          for (int i = 0; i < observedPoints.length; ++i) {
+		              Vector2D o = observedPoints[i];
+		              double modelI = Vector2D.distance(o, center);
+		              value.setEntry(i, modelI);
+		              // derivative with respect to p0 = x center
+		              jacobian.setEntry(i, 0, (center.getX() - o.getX()) / modelI);
+		              // derivative with respect to p1 = y center
+		              jacobian.setEntry(i, 1, (center.getX() - o.getX()) / modelI);
+		          }
 
-				double y_undistorted = (y_distImg*(1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
-						+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-						);
+		          return new Pair<RealVector, RealMatrix>(value, jacobian);
 
-				sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
-				if (x_undistorted < sourcePicture.getWidth() && y_undistorted < sourcePicture.getHeight()) {
-					targetImg.putPixel(x_distImg, y_distImg, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_undistorted, y_undistorted)));
-				}
-			}
-		}
+		      }
+		  };
 
-		// Punkte berechnen nach radialer entzerrung zur weiteren bearbeitung (optional):
-		for (int i = 0; i < xPointPairs.size(); i++) {
-			double radius2Center = computeRadius2Center(xPointPairs.get(i).distorted, yPointPairs.get(i).distorted, xCenter, yCenter);
+		  // the target is to have all points at the specified radius from the center
+		  double[] prescribedDistances = new double[observedPoints.length];
+		  Arrays.fill(prescribedDistances, radius);
 
-			xPointPairs.get(i).distorted = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
-					+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-					* xPointPairs.get(i).distorted);
-
-			yPointPairs.get(i).distorted = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
-					+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-					* yPointPairs.get(i).distorted);
-
-		}
-
-		drawTargets(targetImg, "Radial", xPointPairs, yPointPairs);
+		  // least squares problem to solve : modeled radius should be close to target radius
+		  LeastSquaresProblem problem = new LeastSquaresBuilder().
+		                                start(new double[] { 100.0, 50.0 }).
+		                                model(distancesToCurrentCenter).
+		                                target(prescribedDistances).
+		                                lazyEvaluation(false).
+		                                maxEvaluations(1000).
+		                                maxIterations(1000).
+		                                build();
+		  LeastSquaresOptimizer.Optimum optimum = new LevenbergMarquardtOptimizer().optimize(problem);
+		  Vector2D fittedCenter = new Vector2D(optimum.getPoint().getEntry(0), optimum.getPoint().getEntry(1));
+		  System.out.println("fitted center: " + fittedCenter.getX() + " " + fittedCenter.getY());
+		  System.out.println("RMS: "           + optimum.getRMS());
+		  System.out.println("evaluations: "   + optimum.getEvaluations());
+		  System.out.println("iterations: "    + optimum.getIterations());
 	}
 
 	/**
@@ -556,13 +536,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * Speichern des Voralge Bildes bei Aufruf des Plugins und erzeugung einer Kopie
 	 */
 	public int setup(String arg0, ImagePlus arg1) {
-		this.distortedPicture = arg1;
-		debug = distortedPicture.getProcessor().duplicate();
-		debug.setLineWidth(2);
-		debug.setColor(Color.WHITE);
-
-		xCenter = distortedPicture.getProcessor().getWidth() / 2;
-		yCenter = distortedPicture.getProcessor().getHeight() / 2;
+		this.distPicture = arg1;
 		return DOES_ALL;
 	}
 }

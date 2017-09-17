@@ -17,26 +17,26 @@ public class SimplePair
 	
 	/**
 	 * Konstruktor
-	 * @param source Start-Koordinate
-	 * @param target Ziel-Koordinate
+	 * @param distorted Start-Koordinate
+	 * @param undistorted Ziel-Koordinate
 	 */
-	SimplePair(double source,double target)
+	SimplePair(double distorted,double undistorted)
 	{
-		this.source = source;
-		this.target = target;
+		this.distorted = distorted;
+		this.undistorted = undistorted;
 	}
 	
 	/**
 	 * Konstruktor
-	 * @param source Start-Koordinate
-	 * @param target Ziel-Koordinate
+	 * @param distorted Start-Koordinate
+	 * @param undistorted Ziel-Koordinate
 	 * @param radius Abstand zum Gitter-Mittelpunkt
 	 * @param index Punkt-Index der Textdatei
 	 */
-	SimplePair(double source,double target, double radius, double index)
+	SimplePair(double distorted,double undistorted, double radius, double index)
 	{
-		this.source = source;
-		this.target = target;
+		this.distorted = distorted;
+		this.undistorted = undistorted;
 		this.radius = radius;
 		this.index = index;
 	}
@@ -44,12 +44,12 @@ public class SimplePair
 	/**
 	 * Start-Koordinate
 	 */
-	double source = 0.00;
+	double distorted = 0.00;
 	
 	/**
 	 * Ziel- Koordinate
 	 */
-	double target = 0.00;
+	double undistorted = 0.00;
 	
 	/**
 	 * Abstand zum Gittermittelpunkt
