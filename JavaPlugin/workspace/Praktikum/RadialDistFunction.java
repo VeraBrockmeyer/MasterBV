@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import ij.IJ;
 
 /**
- * Klasse f�r den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
+ * Klasse für den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
  * @author 
  *
  */
@@ -18,7 +17,7 @@ public class RadialDistFunction
 {
 
 	/**
-	 * Interner Speicher f�r die Punkt-Paare
+	 * Interner Speicher für die Punkt-Paare
 	 */
 	List<SimplePair> _pointPairs =  new ArrayList<SimplePair>();
 	
@@ -32,12 +31,12 @@ public class RadialDistFunction
 	}
 	
     /**
-     * Gibt die Ziel-Punkt-Koordinaten als double Array aus f�r den LevenbergMarquadt Optimierer
+     * Gibt die Ziel-Punkt-Koordinaten als double Array aus für den LevenbergMarquadt Optimierer
      * @return target	double array mit den ZielKoordinaten 
      */
     public double[] realTargetPoints() 
     {
-        double[] target = new double[_pointPairs.size()]; //Speicher f�r ZielKoordinaten
+        double[] target = new double[_pointPairs.size()]; //Speicher für ZielKoordinaten
         
         for (int i = 0; i < _pointPairs.size(); i++) 
         {
@@ -48,7 +47,7 @@ public class RadialDistFunction
     }
     
     /**
-     * Ezeugt die Verzerrungs-Funktion f�r den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
+     * Ezeugt die Verzerrungs-Funktion für den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
      * @return	Verzerrungs-Funktion in der zu den Keffizienten die Ziel-Werte berechnet werden
      */
     public MultivariateVectorFunction retMVF() 
@@ -64,21 +63,24 @@ public class RadialDistFunction
 		        //x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
 		        for (int i = 0; i < _pointPairs.size(); ++i) 
 		        {
-		        	IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).source + " target " + _pointPairs.get(i).target );
+		        	//IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).source + " target " + _pointPairs.get(i).target );
 		        	
 		        	//radiale verzerrung in x-richtung:
 		        	calculated_target_points[i] = (1 
 		        			+ radial_dist_coeff[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
 		        			+ radial_dist_coeff[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
 		        			+ radial_dist_coeff[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
-		        			) * _pointPairs.get(i).source;
- 	        	
+		        			) * _pointPairs.get(i).source ;
+		        	
+//		        
+		        	
 		        	 IJ.log(String.format("Calculated values: target = %f target_cal = %f ;", _pointPairs.get(i).target,calculated_target_points[i])); 			           		 		
 		        }
 		        
 		        return calculated_target_points;
 		    }			
 		};
+    	
     }
     
     
