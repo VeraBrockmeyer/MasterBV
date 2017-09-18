@@ -153,24 +153,33 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 					String[] numbers = lines[j].split("\t"); // spalte zeile
 					// anhand des
 					// tab zeichens
-
-					SimplePair xPair = new SimplePair(Integer.parseInt(numbers[1].trim()), // x
+					
+					
+					
+					
+					
+					SimplePair xPair = new SimplePair(Integer.parseInt(numbers[1].trim())-xCenter, // x
 							// source
-							Integer.parseInt(numbers[3].trim()), // x' target
+							Integer.parseInt(numbers[3].trim())-xCenter, // x' target
 							Math.sqrt((Integer.parseInt(numbers[1].trim()) - xCenter)
 									* (Integer.parseInt(numbers[1].trim()) - xCenter)
 									+ (Integer.parseInt(numbers[2].trim()) - yCenter)
 									* (Integer.parseInt(numbers[2].trim()) - yCenter)),
 							Integer.parseInt(numbers[0].trim()));// Index );
 
-					SimplePair yPair = new SimplePair(Integer.parseInt(numbers[2].trim()), // y
+					SimplePair yPair = new SimplePair(Integer.parseInt(numbers[2].trim())-yCenter, // y
 							// source
-							Integer.parseInt(numbers[4].trim()), // y' target
+							Integer.parseInt(numbers[4].trim())-yCenter, // y' target
 							Math.sqrt((Integer.parseInt(numbers[1].trim()) - xCenter)
 									* (Integer.parseInt(numbers[1].trim()) - xCenter)
 									+ (Integer.parseInt(numbers[2].trim()) - yCenter)
 									* (Integer.parseInt(numbers[2].trim()) - yCenter)),
 							Integer.parseInt(numbers[0].trim()));// Index );
+					
+					
+					
+					
+					
 					//
 					// //berechne x_target und y_target und gebe sie aus - NUR
 					// zur einmaligen generierung der Pointpairs:
@@ -200,6 +209,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 
 	}
+
+
+	
 
 
 	public static ImagePlus computeDrawPerpectiveTransformation(ImagePlus sourcePicture, List<SimplePair> xPointPairs, List<SimplePair> yPointPairs){
@@ -265,7 +277,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				} 
 				else
 				{
-					targetImg.putPixel(x, y, 0);
+					targetImg.putPixel(x, y, 255);
 				}
 			}
 		}
@@ -308,21 +320,34 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		for (int y_target = 0; y_target < sourcePicture.getHeight(); y_target++) {
 			for (int x_target = 0; x_target < sourcePicture.getWidth(); x_target++) {
 				// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
+				
+				
 
 				double radius2Center = computeRadius2Center(x_target, y_target, xCenter, yCenter);
-
-				double x_distorted = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
+				
+				
+				
+				
+				double x_undist = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 						+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-						* x_target);
+						* (x_target-xCenter));
 
-				double y_distorted = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
+				double y_undist = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
 						+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-						* y_target);
+						* (y_target-yCenter));
 
+				x_undist+=xCenter;
+				y_undist+=yCenter;
+				
+				
+				
 				sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
-				if (x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight()) {
+				if (x_undist < sourcePicture.getWidth() && y_undist < sourcePicture.getHeight()) {
 					targetImg.putPixel(x_target, y_target, (int) Math
-							.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
+							.round(sourcePicture.getProcessor().getInterpolatedPixel(x_undist, y_undist)));
+				}
+				else {
+					targetImg.putPixel(x_target, y_target, 255);
 				}
 			}
 		}
@@ -331,13 +356,19 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		for (int i = 0; i < xPointPairs.size(); i++) {
 			double radius2Center = computeRadius2Center(xPointPairs.get(i).source, yPointPairs.get(i).source, xCenter, yCenter);
 
-			xPointPairs.get(i).source = (1. / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
+			double x_dist = xPointPairs.get(i).source;
+			double y_dist = yPointPairs.get(i).source;
+			xPointPairs.get(i).target+=xCenter;
+			yPointPairs.get(i).target+=yCenter;
+		
+			
+			xPointPairs.get(i).source = ( x_dist / (1. + x_koeff[0] * Math.pow(radius2Center, 2.00)
 					+ x_koeff[1] * Math.pow(radius2Center, 4.00) + x_koeff[2] * Math.pow(radius2Center, 6.00))
-					* xPointPairs.get(i).source);
+					)+ xCenter;
 
-			yPointPairs.get(i).source = (1. / (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
+			yPointPairs.get(i).source = (y_dist/ (1. + y_koeff[0] * Math.pow(radius2Center, 2.00)
 					+ y_koeff[1] * Math.pow(radius2Center, 4.00) + y_koeff[2] * Math.pow(radius2Center, 6.00))
-					* yPointPairs.get(i).source);
+					)+ yCenter;
 
 		}
 
@@ -358,7 +389,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		res.setLineWidth(3);
 		for (int i = 0; i < xPointPairs.size(); i++) {
 
-			res.setColor(Color.WHITE);
+			res.setColor(Color.BLACK);
 			res.drawOval((int) xPointPairs.get(i).target, (int) yPointPairs.get(i).target, 3, 3);
 			res.setColor(Color.GRAY);
 			res.drawOval((int) xPointPairs.get(i).source, (int) yPointPairs.get(i).source, 3, 3);
@@ -521,13 +552,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// set target data
 		lsb.target(newTarget);
-		double[] newStart = { .001, .001, .001 };
+		double[] newStart = { 1.e-10, 1.e-10, 1.e-10 };
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
-		lsb.maxEvaluations(9000);
+		lsb.maxEvaluations(1000);
 		// set upper limit of iteration time
-		lsb.maxIterations(20000);
+		lsb.maxIterations(500);
 
 		LevenbergMarquardtOptimizer lmo = new LevenbergMarquardtOptimizer();
 		try {

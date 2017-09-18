@@ -135,11 +135,11 @@ public class RadialDistortion_ implements PlugInFilter {
 					// anhand des
 					// tab zeichens
 					
-					double x_dist = Integer.parseInt(numbers[1].trim());
-					double y_dist = Integer.parseInt(numbers[2].trim());
+					double x_dist = Integer.parseInt(numbers[1].trim())-xCenter;
+					double y_dist = Integer.parseInt(numbers[2].trim())-yCenter;
 					
-					double x_undist = Integer.parseInt(numbers[3].trim());
-					double y_undist = Integer.parseInt(numbers[4].trim());
+					double x_undist = Integer.parseInt(numbers[3].trim())-xCenter;
+					double y_undist = Integer.parseInt(numbers[4].trim())-yCenter;
 					
 					int index = Integer.parseInt(numbers[0].trim());
 
@@ -277,6 +277,8 @@ public class RadialDistortion_ implements PlugInFilter {
 		 double[] yCoeffs = new double [3];
 		double xCenter = sourcePicture.getProcessor().getWidth() / 2;
 		double yCenter = sourcePicture.getProcessor().getHeight() / 2;
+		
+		
 
 		System.out.println("Starting X Coeff Estimation ....");
 		
@@ -293,8 +295,8 @@ public class RadialDistortion_ implements PlugInFilter {
 		        	  PointPair pp = pairs.get(i);
 		              double val = (1. + coeffs.getEntry(0)* pp.r * pp.r 
 		            		  + coeffs.getEntry(1) * pp.r * pp.r * pp.r * pp.r
-		            		  + coeffs.getEntry(1)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
-		            		  * pp.x_dist-pp.x_undist;
+		            		  + coeffs.getEntry(2)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
+		            		  * pp.x_dist;
 		              
 		              value.setEntry(i, val);
 		              
@@ -330,7 +332,7 @@ public class RadialDistortion_ implements PlugInFilter {
 		                                target(targetsX).
 		                                lazyEvaluation(false).
 		                                maxEvaluations(1000).
-		                                maxIterations(1000).
+		                                maxIterations(500).
 		                                build();
 		  LeastSquaresOptimizer.Optimum optimumX = new LevenbergMarquardtOptimizer().optimize(problemX);
 		  xCoeffs[0] = optimumX.getPoint().getEntry(0);
@@ -359,8 +361,8 @@ public class RadialDistortion_ implements PlugInFilter {
 			        	  PointPair pp = pairs.get(i);
 			              double val = (1. + coeffs.getEntry(0)* pp.r * pp.r 
 			            		  + coeffs.getEntry(1) * pp.r * pp.r * pp.r * pp.r
-			            		  + coeffs.getEntry(1)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
-			            		  * pp.y_dist-pp.y_undist;
+			            		  + coeffs.getEntry(2)* pp.r *pp.r * pp.r *pp.r * pp.r * pp.r)
+			            		  * pp.y_dist;
 			              
 			              value.setEntry(i, val);
 			              
@@ -396,7 +398,7 @@ public class RadialDistortion_ implements PlugInFilter {
 			                                target(targetsY).
 			                                lazyEvaluation(false).
 			                                maxEvaluations(1000).
-			                                maxIterations(1000).
+			                                maxIterations(500).
 			                                build();
 			  LeastSquaresOptimizer.Optimum optimumY = new LevenbergMarquardtOptimizer().optimize(problemY);
 			  yCoeffs[0] = optimumY.getPoint().getEntry(0);
@@ -407,7 +409,7 @@ public class RadialDistortion_ implements PlugInFilter {
 			  System.out.println("evaluations: "   + optimumY.getEvaluations());
 			  System.out.println("iterations: "    + optimumY.getIterations());
 			  
-			  //-----------------------------------------------------------------------------------------------------------------------
+			//-----------------------------------------------------------------------------------------------------------------------
 			  
 			// Pixel Werte für neues Bild berechnen nach dem "target to source"
 				// Verfahren
@@ -416,20 +418,25 @@ public class RadialDistortion_ implements PlugInFilter {
 						// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
 
 						double radius2Center = computeRadius2Center(x, y, xCenter, yCenter);
-	
 						
 						double x_distorted = (1./(1. + xCoeffs[0] * Math.pow(radius2Center, 2.00)
 								+ xCoeffs[1] * Math.pow(radius2Center, 4.00) + xCoeffs[2] * Math.pow(radius2Center, 6.00))
-								* x);
+								* (x-xCenter));
 
 						double y_distorted = (1./ (1. + yCoeffs[0] * Math.pow(radius2Center, 2.00)
 								+ yCoeffs[1] * Math.pow(radius2Center, 4.00) + yCoeffs[2] * Math.pow(radius2Center, 6.00))
-								* y);
-
+								* (y-yCenter));
+						
+						x_distorted+=xCenter;
+						y_distorted+=yCenter;
+						
 						sourcePicture.getProcessor().setInterpolationMethod(sourcePicture.getProcessor().BILINEAR);
-						if (x_distorted < sourcePicture.getWidth() && y_distorted < sourcePicture.getHeight()) {
+						if (x_distorted>=0 && x_distorted < sourcePicture.getWidth() && y_distorted>=0 && y_distorted < sourcePicture.getHeight()) {
 							targetImg.putPixel(x, y, (int) Math
 									.round(sourcePicture.getProcessor().getInterpolatedPixel(x_distorted, y_distorted)));
+						}
+						else{
+							targetImg.putPixel(x, y,255);
 						}
 					}
 				}
@@ -441,13 +448,16 @@ public class RadialDistortion_ implements PlugInFilter {
 					pp.x_dist = (1. / (1. + xCoeffs[0] * Math.pow(pp.r, 2.00)
 							+ xCoeffs[1] * Math.pow(pp.r, 4.00) + xCoeffs[2] * Math.pow(pp.r, 6.00))
 							* pp.x_dist);
+					
 
 					pp.y_dist = (1. / (1. + yCoeffs[0] * Math.pow(pp.r, 2.00)
 							+ yCoeffs[1] * Math.pow(pp.r, 4.00) + yCoeffs[2] * Math.pow(pp.r, 6.00))
 							* pp.y_dist);
 
-				}			
+				}
+				
 	  drawTargets(targetImg, "Radial", pairs);
+	  
 	}
 
 	/**
@@ -460,14 +470,16 @@ public class RadialDistortion_ implements PlugInFilter {
 	public static void drawTargets(ImageProcessor ip, String s, List<PointPair> pairs) {
 		// Punkte in radial entzerrtes Bild malen
 		ImageProcessor res = ip.duplicate();
+		int xCenter = ip.getWidth() / 2;
+		int yCenter = ip.getHeight() / 2;
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
 		for (int i = 0; i < pairs.size(); i++) {
 			PointPair pp = pairs.get(i);
 			res.setColor(Color.BLACK);
-			res.drawOval((int) pp.x_undist, (int) pp.y_undist, 3, 3);
+			res.drawOval((int) pp.x_undist+xCenter, (int) pp.y_undist-yCenter, 3, 3);
 			res.setColor(Color.GRAY);
-			res.drawOval((int) pp.x_dist, (int) pp.y_dist, 3, 3);
+			res.drawOval((int) pp.x_dist+xCenter, (int) pp.y_dist-yCenter, 3, 3);
 		}
 
 		ImagePlus resImg = new ImagePlus(s, res);

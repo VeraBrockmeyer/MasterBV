@@ -71,17 +71,14 @@ public class RadialDistFunction
 		        			+ radial_dist_coeff[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
 		        			+ radial_dist_coeff[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
 		        			+ radial_dist_coeff[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
-		        			) * _pointPairs.get(i).source - _pointPairs.get(i).target;
-		        	
-//		        
-		        	
+		        			) * _pointPairs.get(i).source;
+ 	        	
 		        	 IJ.log(String.format("Calculated values: target = %f target_cal = %f ;", _pointPairs.get(i).target,calculated_target_points[i])); 			           		 		
 		        }
 		        
 		        return calculated_target_points;
 		    }			
 		};
-    	
     }
     
     
