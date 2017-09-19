@@ -4,7 +4,68 @@
 \todo[inline, color=red]{XXX}
 
 \subsection{Hardware}\label{sec:Hardware}
+
+During the implementation phase, the application was run on two computers which are described in the following two sections. Both computers needed to be able to deal with the software components described in section \ref{sec:Software}. An extract from their data sheet is shown in Table \ref{tab:Computer1} respectively Table \ref{tab:Computer2}.
+
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+		\Absatzbox{}
+		\textbf{Acer E5-571G}& \textbf{Description} \\
+		\hline
+		Processor & Intel Core i7 CPU @ 2.40 GHz\\
+		\hline
+		RAM & 8 GB  \\
+		\hline 
+		Graphic Card & NVIDIA GeForce 840M\\
+		\hline
+		Operating System &  Windows 10 Education 64 bit   \\
+		\hline
+	\end{tabular}
+	\caption[Extract from the Data Sheet of the Acer E5-571G]{Extract from the Data Sheet of the Acer E5-571G}.
+	\label{tab:Computer1}
+\end{table}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|}
+		\hline
+		\Absatzbox{}
+		\textbf{Acer Aspire 5820TG}& \textbf{Description} \\
+		\hline
+		Processor & Intel Core i3 CPU @ $2.40\,$GHz \\
+		\hline
+		RAM & $4\,$GB \\
+		\hline 
+		Graphic Card 1 & AMD Mobilty Radeon HD 5000 Series\\
+		\hline
+		Graphic Card 2 & Intel(R) HD Graphics\\
+		\hline
+		Operating System & Windows 10 Education 64 bit \\
+		\hline
+	\end{tabular}
+	\caption[Extract from the Data Sheet of the Acer Aspire 5820TG Notebook.]{Extract from the Data Sheet of the Acer Aspire 5820TG Notebook.}
+	\label{tab:Computer2}
+\end{table}
+
 \subsection{Software}
+
+\subsection{Entwicklung}
+Das Plugin zur radialen Entzerrung von regelmäßigen Punktrastern wurde in der Programmiersprache Java (Version $ 1.8.0 31 $) in der Entwicklungsumgebung Eclipse IDE for Java Developers (Version 4.4.1 Luna) entwickelt. Java lief in der Laufzeitumgebung Java SE Runtime Environment (Version $ 1.8.0 31-b13 $), welche auf dem Betriebssystem Windows 7 Professional installiert war.
+
+\subsection{\textit{ImageJ}}
+\textit{ImageJ} ist eine plattformunabhängige Open-Source Bildbearbeitungssoftware, die in Java implementiert wurde. Mit \textit{ImageJ} können die gängigen Bildformate, wie TIFF, JPEG oder GIF mit unterschiedlichen Bittiefen angezeigt, analysiert und bearbeitet werden~\cite{Collins_ImageJ}. Es ist weiterführend ein weitverbreitetes Werkzeug zur Entwicklung von Methoden und Algorithmen, die zur Analyse von Bilddaten vorgesehen sind. Die Vielzahl der Funktionen wird stetig von den Nutzern in Form von Plugins erweitert und verbessert, wie es in Open-Source-Plattformen gängige Praxis ist.
+\subsubsection{ImageJ Makros}	
+\textit{ImageJ} Makros~\cite{JMacros} sind kleine Programme, die eine Abfolge von \textit{ImageJ} Kommandos ausführen. Zur Erstellung dieser Programme wurde der Recorder entwickelt, welche die ausgeführten Kommandos als Textdatei abspeichert. Diese Textdateien können editiert werden und in \textit{ImageJ} beliebig oft ausgeführt werden. Sie stellen eine erhebliche Arbeitserleichterung beim Testen von Algorithmen mit mehreren Testdaten dar, da sie schnell implementiert sind. Vor allem werden sie genutzt um ein geeignetes Verfahren oder die richtige Parametrierung zu ermitteln. Ist ein richtiger Algorithmus gefunden, kann die Textdatei einfach in Java übersetzt werden.
+
+
+
+\subsection{UnwrapJ}
+\todo[inline, color=red]{Artjom}
+
+\subsection{\textit{Apache Common Math} Bibliothek}
+\todo[inline, color=red]{Artjom}
 
 \subsubsection{Klassen}
 \todo[inline, color=red]{Artjom}
@@ -68,7 +129,7 @@ Das Deformationsmodell besteht aus kubischen Splines, die Glätte und Vielseitig
 In dieser Anwendung wird es jedoch nicht zur Registrierung sondern nur zum erzeugen von Landmarken genutzt. Diese werden in eine Textdatei gespeichert, welche im programmierten Plug-In eingelesen und verwendet wird.
 
 
-\subsubsection{ImageJ}
+
 \newpage
 
 \subsubsection{Eclipse}
