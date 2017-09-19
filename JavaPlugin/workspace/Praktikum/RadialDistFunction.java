@@ -1,3 +1,4 @@
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +20,13 @@ public class RadialDistFunction
 	/**
 	 * Interner Speicher für die Punkt-Paare
 	 */
-	List<SimplePair> _pointPairs =  new ArrayList<SimplePair>();
+	ArrayList<PointPair> _pointPairs =  new ArrayList<PointPair>();
 	
 	/**
 	 * Konstruktor
 	 * @param point_pairs Start und Ziel Koordinaten der Punkte
 	 */
-	RadialDistFunction(List<SimplePair> point_pairs)
+	RadialDistFunction(ArrayList<PointPair> point_pairs)
 	{
 		this._pointPairs = point_pairs;
 	}
@@ -36,11 +37,13 @@ public class RadialDistFunction
      */
     public double[] realTargetPoints() 
     {
-        double[] target = new double[_pointPairs.size()]; //Speicher für ZielKoordinaten
-        
-        for (int i = 0; i < _pointPairs.size(); i++) 
+        double[] target = new double[_pointPairs.size()*2]; //Speicher für ZielKoordinaten
+        int counter =0;
+        for (int i = 0; i < target.length; i+=2) 
         {
-            target[i] = _pointPairs.get(i).target; //zielwerte x
+            target[i] = _pointPairs.get(counter).x_undist; //zielwerte x
+            target[i+1] = _pointPairs.get(counter).y_undist; //zielwerte y
+            counter++;
         }
         
         return target;
@@ -55,29 +58,28 @@ public class RadialDistFunction
 		return new MultivariateVectorFunction() 
 		{
 			@Override
-			public double[] value (double[] radial_dist_coeff) throws IllegalArgumentException 
+			public double[] value (double[] coeffs) throws IllegalArgumentException 
 			{
 				IJ.log("MVF called:");
-		        double[] calculated_target_points = new double[_pointPairs.size() ];
-		        
+		        double[] F = new double[_pointPairs.size()*2 ];
+		        int counter=0;
 		        //x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
-		        for (int i = 0; i < _pointPairs.size(); ++i) 
+		        for (int i = 0; i < F.length; i+=2) 
 		        {
 		        	//IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).source + " target " + _pointPairs.get(i).target );
-		        	
+		        	PointPair pp = _pointPairs.get(counter);
 		        	//radiale verzerrung in x-richtung:
-		        	calculated_target_points[i] = (1 
-		        			+ radial_dist_coeff[0] * Math.pow(_pointPairs.get(i).radius, 2.00) 
-		        			+ radial_dist_coeff[1] * Math.pow(_pointPairs.get(i).radius, 4.00)
-		        			+ radial_dist_coeff[2] * Math.pow(_pointPairs.get(i).radius, 6.00)
-		        			) * _pointPairs.get(i).source ;
-		        	
-//		        
-		        	
-		        	 IJ.log(String.format("Calculated values: target = %f target_cal = %f ;", _pointPairs.get(i).target,calculated_target_points[i])); 			           		 		
-		        }
-		        
-		        return calculated_target_points;
+		        	F[i] = (1 + coeffs[0] * pp.r + coeffs[1] * pp.r * pp.r + coeffs[2] * pp.r * pp.r * pp.r) * pp.x_dist ;
+		        	F[i+1] = (1 + coeffs[0] * pp.r + coeffs[1] * pp.r * pp.r + coeffs[2] * pp.r * pp.r * pp.r) * pp.y_dist ;
+   		        	counter++;
+   		        	
+//   		        	System.out.println(F[i]);
+//   		        	System.out.println(F[i+1]);
+   		        	IJ.log(String.format("Calculated values: X_undist = %f  X_dist = %f ; Y_undist = %f Y_dist = %f", 
+   		        			pp.x_undist,F[i],pp.y_undist,F[i+1])); 			        
+		      	 }
+			
+		        return F;
 		    }			
 		};
     	
@@ -97,34 +99,38 @@ public class RadialDistFunction
 			@Override
 			public double[][] value(double[] point) throws IllegalArgumentException 
 			{
-				// TODO Auto-generated method stub
                 return jacobian(point);
 			}
 
 			/**
-			 * calculate and retjacobian
+			 * calculate and set jacobian
 			 * @param	variables	parameters of model function
 			 * @return	jacobian	jacobian of the model function
 			 */
 		    private double[][] jacobian(double[] variables) 
 		    {
 		    	IJ.log("MMF called:");
-		        double[][] jacobian = new double[_pointPairs.size()][3];
-		        
-		        for (int i = 0; i < _pointPairs.size(); ++i) 
+		        double[][] jacobian = new double[_pointPairs.size()*2][3];
+		        int counter =0;
+		        for (int i = 0; i < jacobian.length; i+=2) 
 		        {
+		        	PointPair pp = _pointPairs.get(counter);
 		        	//x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
 		        	//dx'/da = r^2*x
 		        	//dx'/db = r^4*x
 		        	//dx'/dc = r^6*x
-		        	
-		        	
-		            jacobian[i][0] = Math.pow(_pointPairs.get(i).radius, 2.00)  * _pointPairs.get(i).source; 
-		            jacobian[i][1] = Math.pow(_pointPairs.get(i).radius, 4.00)  * _pointPairs.get(i).source; 
-		            jacobian[i][2] = Math.pow(_pointPairs.get(i).radius, 6.00)  * _pointPairs.get(i).source;
+		        			        	
+		            jacobian[i][0] = pp.r * pp.x_dist; 
+		            jacobian[i][1] = pp.r * pp.r * pp.x_dist; 
+		            jacobian[i][2] = pp.r * pp.r * pp.r * pp.x_dist; 
 		            
-//		         
-		            //IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+_pointPairs.size()][0],  jacobian[i+_pointPairs.size()][1],  jacobian[i+_pointPairs.size()][2])); 			           		 		
+		            jacobian[i+1][0] = pp.r * pp.x_dist; 
+		            jacobian[i+1][1] = pp.r * pp.r * pp.x_dist; 
+		            jacobian[i+1][2] = pp.r * pp.r * pp.r * pp.x_dist; 
+		            counter++;
+//		         	System.out.println(jacobian[i][0] + "\t" + jacobian[i][1] + "\t" + jacobian[i][2] + "\t" );
+//		         	System.out.println(jacobian[i+1][0] + "\t" + jacobian[i+1][1] + "\t" + jacobian[i+1][2] + "\t" );
+		            IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+1][0],  jacobian[i+1][1],  jacobian[i+1][2])); 			           		 		
 
 		        }
 		        return jacobian;

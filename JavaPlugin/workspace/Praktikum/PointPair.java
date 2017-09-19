@@ -24,33 +24,32 @@ public class PointPair {
 	 */
 	double r;
 	
+
 	/**
-	 * Konstruktor
-	 * @param distorted Start-Koordinate
-	 * @param undistorted Ziel-Koordinate
+	 * Index des PointPairs in Liste
 	 */
-	PointPair(double x_dist,double y_dist, double x_undist, double y_undist)
-	{
-		this.x_dist=x_dist;
-		this.y_dist=y_dist;
-		this.x_undist=x_undist;
-		this.y_undist=y_undist;
-	}
+	double index;
+	
+	
 	
 	/**
 	 * Konstruktor
-	 * @param distorted Start-Koordinate
-	 * @param undistorted Ziel-Koordinate
-	 * @param radius Abstand zum Gitter-Mittelpunkt
-	 * @param index Punkt-Index der Textdatei
+	 * @param x_dist X-Coord of distorted Point
+	 * @param y_dist Y-Coord of distorted Point
+	 * @param x_undist X-Coord of undistorted Point
+	 * @param y_undist Y-Coord of undistorted Point
+	 * @param x0 X-Coord of image center
+	 * @param y0 Y-Coord of image center
+	 * @param index Index des PointPairs in list
 	 */
-	PointPair(double x_dist,double y_dist, double x_undist, double y_undist, double radius)
+	PointPair(double x_dist,double y_dist, double x_undist, double y_undist, double x0, double y0, double index)
 	{
-		this.x_dist=x_dist;
-		this.y_dist=y_dist;
-		this.x_undist=x_undist;
-		this.y_undist=y_undist;
-		this.r = radius;
+		this.x_dist=x_dist - x0;
+		this.y_dist=y_dist - y0;
+		this.x_undist=x_undist - x0;
+		this.y_undist=y_undist - y0;
+		this.index = index;
+		this.r = computeRadius2Center(this.x_dist, this.y_dist, x0, y0);
 	}
 	
 	/**
@@ -61,8 +60,8 @@ public class PointPair {
 	 * @param y0 y-Koordinate des Mittelpunktes
 	 * @return
 	 */
-	public double computeRadius2Center(double x, double y, double x0, double y0) {
-		return Math.sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0));
+	private double computeRadius2Center(double x, double y, double x0, double y0) {
+		return  ((x - x0) * (x - x0) + (y - y0) * (y - y0));
 	}
 	
 	
