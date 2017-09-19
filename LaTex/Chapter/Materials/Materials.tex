@@ -108,6 +108,20 @@ retMMF & Jacobi-Matrix-Funktion zur Berechnung der Ableitung nach den einzelnen 
 \end{figure}
 
 
+\paragraph{UnwrapJ}
+ ist ein für ImageJ entwickeltes Plugin, das die elastische Registrierung von zwei Bildern ermöglicht, indem es ein Quellbild verformt, so dass es einem Zielbild ähnelt. 
+Es stehen drei Betriebsarten zur Verfügung: 
+
+\begin{enumerate}
+\item ein vollautomatischer Modus; 
+\item ein vollständig interaktiver Modus, bei dem die Verformung durch die Position einer beliebigen Anzahl von Landmarken eindeutig bestimmt ist; 
+\item ein gemischter Modus, bei dem interaktive Landmarken nur verwendet werden, um eine ansonsten automatische Registrierungsprozedur anzuzeigen.
+\end{enumerate}
+
+Das Deformationsmodell besteht aus kubischen Splines, die Glätte und Vielseitigkeit gewährleisten. Das Registrierungskriterium enthält einen Vektor-Spline-Regularisierungstermin, um die Deformation physisch realistisch zu beschränken.\cite{unwrapj}
+
+In dieser Anwendung wird es jedoch nicht zur Registrierung sondern nur zum erzeugen von Landmarken genutzt. Diese werden in eine Textdatei gespeichert, welche im programmierten Plug-In eingelesen und verwendet wird.
+
 
 
 \newpage

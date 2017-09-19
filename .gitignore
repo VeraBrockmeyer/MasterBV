@@ -53,3 +53,6 @@ hs_err_pid*
 JavaPlugin/workspace/.metadata/
 JavaPlugin/workspace/.recommenders/
 *.classpath
+
+#LateX
+*.bak
