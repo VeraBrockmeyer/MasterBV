@@ -9,7 +9,7 @@ import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import ij.IJ;
 
 /**
- * Klasse für den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
+ * Klasse fuer den Optimierer zur Berechnung der Verzerrung durch Vorgabe der Koeffizienten
  * @author 
  *
  */
@@ -18,7 +18,7 @@ public class RadialDistFunction
 {
 
 	/**
-	 * Interner Speicher für die Punkt-Paare
+	 * Interner Speicher fuer die Punkt-Paare
 	 */
 	ArrayList<PointPair> _pointPairs =  new ArrayList<PointPair>();
 	
@@ -32,25 +32,25 @@ public class RadialDistFunction
 	}
 	
     /**
-     * Gibt die Ziel-Punkt-Koordinaten als double Array aus für den LevenbergMarquadt Optimierer
+     * Gibt die Ziel-Punkt-Koordinaten als double Array aus fuer den LevenbergMarquadt Optimierer
      * @return target	double array mit den ZielKoordinaten 
      */
     public double[] realTargetPoints() 
     {
-        double[] target = new double[_pointPairs.size()*2]; //Speicher für ZielKoordinaten
-        int counter =0;
+        double[] target = new double[_pointPairs.size()*2]; //Speicher fuer ZielKoordinaten
+        int point_counter =0;
         for (int i = 0; i < target.length; i+=2) 
         {
-            target[i] = _pointPairs.get(counter).x_undist; //zielwerte x
-            target[i+1] = _pointPairs.get(counter).y_undist; //zielwerte y
-            counter++;
+            target[i] = _pointPairs.get(point_counter).x_undist; //zielwerte x
+            target[i+1] = _pointPairs.get(point_counter).y_undist; //zielwerte y
+            point_counter++;
         }
         
         return target;
     }
     
     /**
-     * Ezeugt die Verzerrungs-Funktion für den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
+     * Ezeugt die Verzerrungs-Funktion fuer den Optimierer (x' = (1 + a*r^2 + b*r^4 + c*r^6) * x)
      * @return	Verzerrungs-Funktion in der zu den Keffizienten die Ziel-Werte berechnet werden
      */
     public MultivariateVectorFunction retMVF() 
@@ -61,20 +61,23 @@ public class RadialDistFunction
 			public double[] value (double[] coeffs) throws IllegalArgumentException 
 			{
 				IJ.log("MVF called:");
+				
 		        double[] F = new double[_pointPairs.size()*2 ];
-		        int counter=0;
+		        int point_counter=0;
 		        //x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
 		        for (int i = 0; i < F.length; i+=2) 
 		        {
 		        	//IJ.log("Point par values: R " + _pointPairs.get(i).radius + " source" + _pointPairs.get(i).source + " target " + _pointPairs.get(i).target );
-		        	PointPair pp = _pointPairs.get(counter);
+		        	
+		        	PointPair pp = _pointPairs.get(point_counter);
+		        	
 		        	//radiale verzerrung in x-richtung:
 		        	F[i] = (1 + coeffs[0] * pp.r + coeffs[1] * pp.r * pp.r + coeffs[2] * pp.r * pp.r * pp.r) * pp.x_dist ;
+		        	
+		        	//radiale verzerrung in y-richtung:
 		        	F[i+1] = (1 + coeffs[0] * pp.r + coeffs[1] * pp.r * pp.r + coeffs[2] * pp.r * pp.r * pp.r) * pp.y_dist ;
-   		        	counter++;
+		        	point_counter++;
    		        	
-//   		        	System.out.println(F[i]);
-//   		        	System.out.println(F[i+1]);
    		        	IJ.log(String.format("Calculated values: X_undist = %f  X_dist = %f ; Y_undist = %f Y_dist = %f", 
    		        			pp.x_undist,F[i],pp.y_undist,F[i+1])); 			        
 		      	 }
@@ -111,10 +114,10 @@ public class RadialDistFunction
 		    {
 		    	IJ.log("MMF called:");
 		        double[][] jacobian = new double[_pointPairs.size()*2][3];
-		        int counter =0;
+		        int point_counter =0;
 		        for (int i = 0; i < jacobian.length; i+=2) 
 		        {
-		        	PointPair pp = _pointPairs.get(counter);
+		        	PointPair pp = _pointPairs.get(point_counter);
 		        	//x' = (1 + a*r^2 + b*r^4 + c*r^6) * x
 		        	//dx'/da = r^2*x
 		        	//dx'/db = r^4*x
@@ -127,10 +130,10 @@ public class RadialDistFunction
 		            jacobian[i+1][0] = pp.r * pp.x_dist; 
 		            jacobian[i+1][1] = pp.r * pp.r * pp.x_dist; 
 		            jacobian[i+1][2] = pp.r * pp.r * pp.r * pp.x_dist; 
-		            counter++;
-//		         	System.out.println(jacobian[i][0] + "\t" + jacobian[i][1] + "\t" + jacobian[i][2] + "\t" );
-//		         	System.out.println(jacobian[i+1][0] + "\t" + jacobian[i+1][1] + "\t" + jacobian[i+1][2] + "\t" );
-		            IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+1][0],  jacobian[i+1][1],  jacobian[i+1][2])); 			           		 		
+		            
+		            point_counter++;
+
+		            //IJ.log(String.format("Jacobian values: x_1 %f x_2 %f x_3 %f ; y_1 %f y_2 %f y_3 %f", jacobian[i][0], jacobian[i][1], jacobian[i][2],  jacobian[i+1][0],  jacobian[i+1][1],  jacobian[i+1][2])); 			           		 		
 
 		        }
 		        return jacobian;

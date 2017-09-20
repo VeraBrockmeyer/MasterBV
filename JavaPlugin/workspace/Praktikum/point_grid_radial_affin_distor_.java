@@ -24,7 +24,7 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
 /**
- * IJ Plugin für die Berechnung der Radialen Verzerrung anhand von Pixel-Koordinaten paaren
+ * IJ Plugin fuer die Berechnung der Radialen Verzerrung anhand von Pixel-Koordinaten paaren
  * @author Vera Brockmeyer
  * @author Artjom Schwabski
  *
@@ -32,7 +32,7 @@ import ij.process.ShortProcessor;
 public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	
 	/**
-	 * Speicher für das Vorlagenbild zum Abrufen der Pixel Werte zur Zeichnung der entzerrung
+	 * Speicher fuer das Vorlagenbild zum Abrufen der Pixel Werte zur Zeichnung der entzerrung
 	 */
 	private ImagePlus distPicture;
 	
@@ -64,7 +64,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	
 		
 	/**
-	 * Speicher für Koorinaten Paare der x-Achse
+	 * Speicher fuer Punkt Paare
 	 */
 	private ArrayList<PointPair> pointPairs = new ArrayList<PointPair>();
 	
@@ -89,18 +89,20 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 
 	/**
-	 * Öffnet die Auswahl eines Textfensters und lädt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
-	 * Zusätzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswählen zu können
+	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
+	 * Zusaetzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswaehlen zu koennen
 	 */
 	private void readData() {
 
+		//Fuer ein optimal zentrierte Gitterabbildung kann die Bildmitte berechnet werden. Ansonnsten hier die koordinaten des Gittermittelpunktes im Bild angeben
 		int xCenter = distPicture.getProcessor().getWidth() / 2;
 		int yCenter = distPicture.getProcessor().getHeight() / 2; 
+	
 		ImageProcessor ip = distPicture.getProcessor().duplicate();
 
-		// Textfenster mit Punktpaare Textdtei wählen:
+		// Textfenster mit Punktpaare Textdtei waehlen:
 		java.awt.Window[] non_img_windows = WindowManager.getAllNonImageWindows();
-		GenericDialog gd = new GenericDialog("Textdatei auswählen:");
+		GenericDialog gd = new GenericDialog("Textdatei auswaehlen:");
 		String[] Windows_names = new String[non_img_windows.length];
 		for (int i = 0; i < non_img_windows.length; i++) {
 			if (non_img_windows[i] instanceof ij.plugin.frame.Editor) {
@@ -128,23 +130,24 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 				String[] lines = text.split("\n");
 
-				// speicher für punkt paarungen
+				// speicher fuer punkt paarungen
 
 				for (int j = 1; j < lines.length; j++) // erste zeile
-														// überspringen
+														// ueberspringen
 				{
 					String[] numbers = lines[j].split("\t"); // spalte zeile
 																// anhand des
 																// tab zeichens
 
+					//Erzeuge Punkt bezogen auf Mittelpunkt:
 					PointPair pp = new PointPair(
 							Integer.parseInt(numbers[1].trim()), // x dist
-							Integer.parseInt(numbers[2].trim()), // y dist												// source
+							Integer.parseInt(numbers[2].trim()), // y dist
 							Integer.parseInt(numbers[3].trim()), // x' undist
 							Integer.parseInt(numbers[4].trim()), // y' undist
 							xCenter,
 							yCenter,
-							Integer.parseInt(numbers[0].trim()));// Index );
+							Integer.parseInt(numbers[0].trim()));// Index
 
 					
 //					 //berechne x_target und y_target und gebe sie aus - NUR
@@ -164,8 +167,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 //					 
 //					 pp.x_undist= x_undist-xCenter;
 //					 pp.y_undist=y_undist-yCenter;
-					 ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
-					 pointPairs.add(pp);
+					
+					//draw undistorted cordinates:
+					 //ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
+					ip.drawString( "" + pp.r, (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter); 
+					pointPairs.add(pp);
 
 				}
 
@@ -266,38 +272,55 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	/**
 	 * Startet die Berechnung der Radialen entzerrung und zeichnet das Ergebnis
 	 * @param distPicture Verzerrtes IJ Bild
-	 * @param xPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
-	 * @param yPointPairs Punkt-Paare für Start und Ziel Koordinaten der x-Achse
+	 * @param xPointPairs Punkt-Paare fuer Start und Ziel Koordinaten der x-Achse
+	 * @param yPointPairs Punkt-Paare fuer Start und Ziel Koordinaten der x-Achse
 	 */
-	public static void computeDrawRadialTransformation(ImagePlus distPicture, ArrayList<PointPair> pointPairs) {
+	public static void computeDrawRadialTransformation(ImagePlus distPicture, ArrayList<PointPair> pointPairs) 
+	{
 		ShortProcessor undistImg = new ShortProcessor(distPicture.getWidth(), distPicture.getHeight(), true);
 
+		//Gittermittelpunkt bestimmen fuer ideale Gitterabbildung kann dieser errechnet werden ansonsten hier die koordinaten eingeben:
 		double xCenter = distPicture.getProcessor().getWidth() / 2;
 		double yCenter = distPicture.getProcessor().getHeight() / 2;
 		
 		// radiale entzerrung berechnen
 		double[] koeff = compute_radial_dist_koeff(pointPairs);
 
-		// Pixel Werte für neues Bild berechnen nach dem "target to source"
+		// Pixel Werte fuer neues Bild berechnen nach dem "target to source"
 		// Verfahren
 		for (int yImg = 0; yImg < distPicture.getHeight(); yImg++) {
 			for (int xImg = 0; xImg < distPicture.getWidth(); xImg++) {
-				// x_target / (1+ a*r^2 + b*r^4 * c*r^6) = x_distorted(source)
-
-				double x2Orign = xImg - xCenter;
-				double y2Orign = yImg - yCenter;
 				
-				double r = computeRadius2Center(x2Orign, y2Orign, xCenter, yCenter);
+				PointPair point = new PointPair();
+				
+				//Koordinatentransformation zum Gittermittelpunkt:
+				point.x_dist = xImg - xCenter;
+				point.y_dist = yImg - yCenter;
+				
+				point.r = computeRadius2Center(point.x_dist, point.y_dist, xCenter, yCenter);
 
-				double x_undistorted = (1. + koeff[0] * r + koeff[1] * r*r + koeff[2] * r*r*r)* x2Orign + xCenter;
+				//radiale Entzerrung mit den vorgebenen Koeffizienten: 
+				//x_distorted * (1+ a*r^2 + b*r^4 * c*r^6) = x_undistorted 
+				
+				point.x_undist = point.x_dist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
 
-				double y_undistorted = (1. + koeff[0] * r + koeff[1] * r*r + koeff[2] * r*r*r)* y2Orign + yCenter;
+				point.y_undist = point.y_dist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
 
+				//Koordinatenruecktransformation in ImageJ Koordinaten:
+				point.x_undist = point.x_undist + xCenter;
+				point.y_undist = point.y_undist + yCenter;
+				
+				//Entzerrtes Bild zeichnen:
 				distPicture.getProcessor().setInterpolationMethod(distPicture.getProcessor().BILINEAR);
 				
-				if (x_undistorted < distPicture.getWidth() && y_undistorted < distPicture.getHeight()) {
-					undistImg.putPixel(xImg, yImg, (int) Math
-							.round(distPicture.getProcessor().getInterpolatedPixel(x_undistorted, y_undistorted)));
+				if (point.x_undist < distPicture.getWidth() && point.y_undist < distPicture.getHeight()) 
+				{
+					undistImg.putPixel(xImg, yImg, (int)Math
+							.round(distPicture.getProcessor().getInterpolatedPixel(point.x_undist, point.y_undist)));
+				}
+				else
+				{
+					//IJ.log(String.format("Pixel out of IMG X: %f Y: %f",point.x_undist, point.y_undist ));
 				}
 			}
 		}
@@ -310,12 +333,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			pp.y_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r)	* pp.y_dist;
 
 		}
+		
 		drawTargets(undistImg, "Radial", pointPairs);
 
 	}
 
 	/**
-	 * Zeichnet Punkte an die Stellen der Zielkoorinaten in das übergebene Bild und bringt es auf den Bildschirm
+	 * Zeichnet Punkte an die Stellen der Zielkoorinaten in das uebergebene Bild und bringt es auf den Bildschirm
 	 * @param ip Bild in das die Punkte gezeichnet werden
 	 * @param s Name des Bildes
 	 * @param xPointPairs x-Koordinaten 
@@ -326,6 +350,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		ImageProcessor res = ip.duplicate();
 		double xCenter = ip.getWidth() / 2;
 		double yCenter = ip.getHeight() / 2;
+		
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
 		for (int i = 0; i < pointPairs.size(); i++) {
@@ -346,7 +371,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	//TODO Ursprung verschieben!!!!
 	/**
 	 * Berechnet und zeichnet die Affine entzerrung anhand der x und y Punkt paare
-	 * Die X und Y Arrays müssen eine zusammengehörige Reihenfolge haben
+	 * Die X und Y Arrays muessen eine zusammengehoerige Reihenfolge haben
 	 * @param xPointPairs Vorlage und Ziel-Koorinaten der x-Achse
 	 * @param yPointPairs Vorlage und Ziel-Koorinaten der y-Achse
 	 * @return Affiner Verzerrungsvektor p
@@ -419,7 +444,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// Berechnen Sie aus den Werten die Umkehrabbildung,
 
-		// erzeugen Sie ein neues Bild gleicher Größe wie das Eingabebild
+		// erzeugen Sie ein neues Bild gleicher Groeße wie das Eingabebild
 		ImageProcessor targetImag = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 
 		// berechnen Sie es nach dem Target-to-Source-Verfahren,
@@ -445,7 +470,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				if (x_coord_vorlage < targetImag.getWidth() && y_coord_vorlage < targetImag.getHeight()) {
 					targetImag.putPixel(x, y, (int) Math.round(
 							sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage, y_coord_vorlage)));
-				} else // mit schwarz auffüllen
+				} else // mit schwarz auffuellen
 				{
 					targetImag.putPixel(x, y, 0);
 				}
@@ -471,7 +496,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	
 	/**
-	 * Berechnet den Abstand zum Gittermittelpunkt
+	 * Berechnet den Abstand zum Gittermittelpunkt (r^2)
 	 * @param x x-Koordinate des Punktes
 	 * @param y y-Koordinate des Punktes
 	 * @param xCenter x-Koordinate des Mittelpunktes
@@ -479,7 +504,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * @return
 	 */
 	public static double computeRadius2Center(double x, double y, double xCenter, double yCenter) {
-		return  ((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
+		return  x * x + y * y;
 	}
 
 	/**
@@ -496,7 +521,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		// set target data
 		double[] undistPoints = qf.realTargetPoints();
 		lsb.target(undistPoints);
-		double[] newStart = { 0.,0.,0. };
+		double[] newStart = { -0.00001,0.000000001,-0.0000000000001 };
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
@@ -511,6 +536,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 			// get optimized parameters
 			final double[] optimalValues = lsoo.getPoint().toArray();
+			
 			// output data
 			IJ.log("A: " + optimalValues[0]);
 			IJ.log("B: " + optimalValues[1]);

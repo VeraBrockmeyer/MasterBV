@@ -3,37 +3,38 @@ public class PointPair {
 	/**
 	 * Start-X Koordinate
 	 */
-	double x_dist = 0.00;
+	public double x_dist = 0.00;
 	
 	/**
 	 * Start-Y Koordinate
 	 */
-	double y_dist = 0.00;
+	public double y_dist = 0.00;
 	
 	/**
 	 * Ziel- X Koordinate
 	 */
-	double x_undist = 0.00;
+	public double x_undist = 0.00;
+	
 	/**
 	 * Ziel- Y Koordinate
 	 */
-	double y_undist = 0.00;
+	public double y_undist = 0.00;
 	
 	/**
-	 * Abstand zum Bildmittelpunkt
+	 * Abstand zum Bildmittelpunkt r^2
 	 */
-	double r;
+	public double r;
 	
 
 	/**
 	 * Index des PointPairs in Liste
 	 */
-	double index;
+	public double index;
 	
 	
 	
 	/**
-	 * Konstruktor
+	 * Konstruktor speichert den Punkt bezogen auf das Koordinatensystem des übergebenen Mittelpunktes
 	 * @param x_dist X-Coord of distorted Point
 	 * @param y_dist Y-Coord of distorted Point
 	 * @param x_undist X-Coord of undistorted Point
@@ -49,19 +50,42 @@ public class PointPair {
 		this.x_undist=x_undist - x0;
 		this.y_undist=y_undist - y0;
 		this.index = index;
-		this.r = computeRadius2Center(this.x_dist, this.y_dist, x0, y0);
+		this.r = computeRadius2Center(x_dist, y_dist);
 	}
 	
 	/**
-	 * Berechnet den Abstand zum Gittermittelpunkt
+	 * Konstruktor speichert den Punkt ohne Bezugskoordinatensystem
+	 * @param x_dist X-Coord of distorted Point
+	 * @param y_dist Y-Coord of distorted Point
+	 * @param x_undist X-Coord of undistorted Point
+	 * @param y_undist Y-Coord of undistorted Point
+	 * @param index Index des PointPairs in list
+	 */
+	PointPair(double x_dist,double y_dist, double x_undist, double y_undist, double index)
+	{
+		this.x_dist=x_dist;
+		this.y_dist=y_dist;
+		this.x_undist=x_undist;
+		this.y_undist=y_undist;
+		this.index = index;
+	}
+	
+	
+	/**
+	 * Standart Konstruktor
+	 */
+	public PointPair() {
+		
+	}
+
+	/**
+	 * Berechnet den Abstand zum Gittermittelpunkt für Koordinaten die auf den Gittermittelpunkt bezogen sind (x^2 + y^2)
 	 * @param x x-Koordinate des Punktes
 	 * @param y y-Koordinate des Punktes
-	 * @param x0 x-Koordinate des Mittelpunktes
-	 * @param y0 y-Koordinate des Mittelpunktes
 	 * @return
 	 */
-	private double computeRadius2Center(double x, double y, double x0, double y0) {
-		return  ((x - x0) * (x - x0) + (y - y0) * (y - y0));
+	private static double computeRadius2Center(double x, double y) {
+		return x * x + y * y;
 	}
 	
 	
