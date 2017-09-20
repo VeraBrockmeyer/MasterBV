@@ -311,7 +311,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				}
 				else
 				{
-					undistImg.putPixel(xImg, yImg,0);	//füllen mit weiß			
+					undistImg.putPixel(xImg, yImg,0);	//füllen mit schwarz			
 				}
 			}
 		}
@@ -341,12 +341,19 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		ImageProcessor res = ip.duplicate();
 		double xCenter = ip.getWidth() / 2;
 		double yCenter = ip.getHeight() / 2;
-		res.setColor(Color.WHITE);
-		
+
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
-		for (int i = 0; i < pointPairs.size(); i++) {
-		res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
+		for (int i = 0; i < pointPairs.size(); i++) 
+		{
+			
+				res.setColor(Color.BLACK);
+
+				res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 5, 5);
+
+				res.setColor(Color.GRAY);
+
+				res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
 		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
@@ -495,7 +502,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		// set target data
 		double[] undistPoints = qf.realTargetPoints();
 		lsb.target(undistPoints);
-		double[] newStart = { -0.00001,0.000000001,-0.0000000000001 };
+		double[] newStart = { 0.000000001,0.0000000000001,-0.00000000000000001 };
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
