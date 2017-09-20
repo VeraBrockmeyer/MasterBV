@@ -1,7 +1,5 @@
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
@@ -14,6 +12,7 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.MathUtils;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -62,6 +61,16 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	private static final int nRow = 13;
 	
+	
+	/**
+	 * Anzahl der Gitter-Reihen zur Berechnung des optimalen Gitters
+	 */
+	private static final int XgridCenter = 1084;
+	
+	/**
+	 * Anzahl der Gitter-Reihen zur Berechnung des optimalen Gitters
+	 */
+	private static final int YgridCenter = 714;
 		
 	/**
 	 * Speicher fuer Punkt Paare
@@ -80,6 +89,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		try {
 			readData();
 			drawPointPairs(distPicture.getProcessor(), "SourceImage", pointPairs);
+			distPicture=computeDrawProjectiveTransformation(distPicture, pointPairs);
 			computeDrawRadialTransformation(distPicture, pointPairs);
 
 		} catch (Exception exc) {
@@ -183,31 +193,38 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	}
 	
 	//TODO Ursprung Verschieben!!!!
-	public static ImagePlus computeDrawPerpectiveTransformation(ImagePlus sourcePicture, ArrayList<PointPair> pointPairs){
+	public static ImagePlus computeDrawProjectiveTransformation(ImagePlus sourcePicture, ArrayList<PointPair> pointPairs){
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
-	
+		int xCenter = targetImg.getWidth() / 2;
+		int yCenter = targetImg.getHeight() / 2; 
 		double[][]B = new double[pointPairs.size()*2][9];
 		int counter = 0;
 		for (int i = 0; i < B.length; i+=2) {
-			PointPair pp = pointPairs.get(counter);
-			B[i][0] = -pp.x_dist;
-			B[i][1] = -pp.y_dist;
+			double x_dist = pointPairs.get(counter).x_dist + xCenter;
+			double y_dist = pointPairs.get(counter).y_dist+ yCenter;
+			
+			double x_undist = pointPairs.get(counter).x_undist + xCenter;
+			double y_undist = pointPairs.get(counter).y_undist+ yCenter;
+			
+			B[i][0] = -x_dist;
+			B[i][1] = -y_dist;
 			B[i][2] = -1.;
 			B[i][3] = 0.;
 			B[i][4] = 0.;
 			B[i][5] = 0.;
-			B[i][6] = pp.x_dist*pp.x_undist;
-			B[i][7] = pp.y_dist*pp.x_undist;
-			B[i][8] = pp.x_undist;
+			B[i][6] = x_dist*x_undist;
+			B[i][7] = y_dist*x_undist;
+			B[i][8] = x_undist;
+
 			B[i+1][0] = 0.;
 			B[i+1][1] = 0.;
 			B[i+1][2] = 0.;
-			B[i+1][3] = -pp.x_dist;
-			B[i+1][4] = -pp.y_dist;
+			B[i+1][3] = -x_dist;
+			B[i+1][4] = -y_dist;
 			B[i+1][5] = -1.;
-			B[i+1][6] = pp.x_dist*pp.y_undist;
-			B[i+1][7] = pp.y_dist*pp.y_undist;
-			B[i+1][8] = pp.y_undist;
+			B[i+1][6] = x_dist*y_undist;
+			B[i+1][7] = y_dist*y_undist;
+			B[i+1][8] = y_undist;
 			counter++;
 		}
 		RealMatrix A = new Array2DRowRealMatrix(B);
@@ -232,15 +249,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		pArray[2][2]=V.getEntry(8,V.getRowDimension()-1);		
 	
 		RealMatrix pMat = new Array2DRowRealMatrix(pArray);
-	
+		RealMatrix pMatInv = MatrixUtils.inverse(pMat);
 		for (int y = 0; y < targetImg.getHeight(); y++) {
 			for (int x = 0; x < targetImg.getWidth(); x++) {
+				
 				double[] target  = {x,y,1};
 				RealVector t_vec = new ArrayRealVector(target, false);
-				RealVector coord_vec = pMat.operate(t_vec);
+				RealVector coord_vec = pMatInv.operate(t_vec);
 				double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
 				double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
 			
+
 				if (x_coord_vorlage>=0 && x_coord_vorlage < targetImg.getWidth() && y_coord_vorlage>=0 && y_coord_vorlage < targetImg.getHeight()) {
 					targetImg.putPixel(x, y, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage , y_coord_vorlage)));
 				} 
@@ -252,20 +271,19 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 		
 		for (int i = 0; i < pointPairs.size(); i++) {
-			PointPair pp = pointPairs.get(i);
-			double[] target  = {pp.x_dist,pp.y_dist,1};
+			double[] target  = {pointPairs.get(i).x_dist+xCenter,pointPairs.get(i).y_dist+yCenter,1};
 			RealVector t_vec = new ArrayRealVector(target, false);
 			RealVector coord_vec = pMat.operate(t_vec);
 			double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
 			double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
-			pp.x_dist = x_coord_vorlage;
-			pp.y_dist = y_coord_vorlage;
+			pointPairs.get(i).x_dist = x_coord_vorlage-xCenter;
+			pointPairs.get(i).y_dist = y_coord_vorlage-yCenter;
+			
 		}
 
 		drawPointPairs(targetImg, "Projective Transformation",pointPairs);
 		return new ImagePlus("Projected Image",targetImg);
 	}
-
 	
 	
 	
@@ -311,7 +329,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				}
 				else
 				{
-					undistImg.putPixel(xImg, yImg,0);	//füllen mit schwarz			
+					undistImg.putPixel(xImg, yImg,255);	//füllen mit weiß			
 				}
 			}
 		}
@@ -344,16 +362,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
-		for (int i = 0; i < pointPairs.size(); i++) 
-		{
-			
-				res.setColor(Color.BLACK);
+		for (int i = 0; i < pointPairs.size(); i++) {
+			res.setColor(Color.BLACK);
 
-				res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 5, 5);
+			res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
 
-				res.setColor(Color.GRAY);
-
-				res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
+			res.setColor(Color.WHITE);
+			res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 5, 5);
 		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
@@ -502,7 +517,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		// set target data
 		double[] undistPoints = qf.realTargetPoints();
 		lsb.target(undistPoints);
-		double[] newStart = { 0.000000001,0.0000000000001,-0.00000000000000001 };
+
+		double[] newStart = { 1.e-10,1.e-10,1.e-10 };
+
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
