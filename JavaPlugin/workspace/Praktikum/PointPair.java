@@ -50,7 +50,7 @@ public class PointPair {
 		this.x_undist=x_undist - x0;
 		this.y_undist=y_undist - y0;
 		this.index = index;
-		this.r = computeRadius2Center(x_dist, y_dist);
+		this.r = computeRadius2Center(this.x_dist, this.y_dist);
 	}
 	
 	/**

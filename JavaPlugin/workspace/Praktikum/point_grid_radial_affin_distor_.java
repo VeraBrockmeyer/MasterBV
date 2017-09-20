@@ -297,7 +297,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				point.x_dist = xImg - xCenter;
 				point.y_dist = yImg - yCenter;
 				
-				point.r = computeRadius2Center(point.x_dist, point.y_dist, xCenter, yCenter);
+				point.r = computeRadius2Center(point.x_dist, point.y_dist);
 
 				//radiale Entzerrung mit den vorgebenen Koeffizienten: 
 				//x_distorted * (1+ a*r^2 + b*r^4 * c*r^6) = x_undistorted 
@@ -497,13 +497,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	
 	/**
 	 * Berechnet den Abstand zum Gittermittelpunkt (r^2)
-	 * @param x x-Koordinate des Punktes
-	 * @param y y-Koordinate des Punktes
-	 * @param xCenter x-Koordinate des Mittelpunktes
-	 * @param yCenter y-Koordinate des Mittelpunktes
+	 * @param x x-Koordinate des Punktes in Mittelpunktorientierten Koordinaten
+	 * @param y y-Koordinate des Punktes in Mittelpunktorientierten Koordinaten
 	 * @return
 	 */
-	public static double computeRadius2Center(double x, double y, double xCenter, double yCenter) {
+	public static double computeRadius2Center(double x, double y) {
 		return  x * x + y * y;
 	}
 
