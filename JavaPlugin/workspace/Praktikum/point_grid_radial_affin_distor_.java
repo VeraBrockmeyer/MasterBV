@@ -79,7 +79,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	public void run(ImageProcessor img) {
 		try {
 			readData();
-			drawTargets(distPicture.getProcessor(), "SourceImage", pointPairs);
+			drawPointPairs(distPicture.getProcessor(), "SourceImage", pointPairs);
 			computeDrawRadialTransformation(distPicture, pointPairs);
 
 		} catch (Exception exc) {
@@ -262,7 +262,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			pp.y_dist = y_coord_vorlage;
 		}
 
-		drawTargets(targetImg, "Projective Transformation",pointPairs);
+		drawPointPairs(targetImg, "Projective Transformation",pointPairs);
 		return new ImagePlus("Projected Image",targetImg);
 	}
 
@@ -297,39 +297,31 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				//radiale Entzerrung mit den vorgebenen Koeffizienten: 
 				//x_distorted * (1+ a*r^2 + b*r^4 * c*r^6) = x_undistorted 
 				
-				point.x_undist = point.x_dist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
-
-				point.y_undist = point.y_dist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
+				point.x_dist = point.x_undist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
+				point.y_dist = point.y_undist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
 
 				//Koordinatenruecktransformation in ImageJ Koordinaten:
-				point.x_undist = point.x_undist + xCenter;
-				point.y_undist = point.y_undist + yCenter;
+				point.x_dist = point.x_dist + xCenter;
+				point.y_dist = point.y_dist + yCenter;
 				
 				//Entzerrtes Bild zeichnen:
-				distPicture.getProcessor().setInterpolationMethod(distPicture.getProcessor().BILINEAR);
-				
-				if (point.x_undist < distPicture.getWidth() && point.y_undist < distPicture.getHeight()) 
+				if (point.x_dist < distPicture.getWidth() && point.y_dist < distPicture.getHeight()) 
 				{
-					undistImg.putPixel(xImg, yImg, (int)Math
-							.round(distPicture.getProcessor().getInterpolatedPixel(point.x_undist, point.y_undist)));
-				}
-				else
-				{
-					//IJ.log(String.format("Pixel out of IMG X: %f Y: %f",point.x_undist, point.y_undist ));
+					undistImg.putPixel(xImg, yImg, distPicture.getProcessor().getPixel((int)point.x_dist, (int)point.y_dist));
 				}
 			}
 		}
 
 		// Punkte berechnen nach radialer entzerrung zur weiteren bearbeitung (optional):
-		for (int i = 0; i < pointPairs.size(); i++) {
+		for (int i = 0; i < pointPairs.size(); i++) 
+		{
 			PointPair pp = 	pointPairs.get(i);
-			pp.x_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r)* pp.x_dist;
-
-			pp.y_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r)	* pp.y_dist;
+			pp.x_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r) * pp.x_dist;
+			pp.y_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r) * pp.y_dist;
 
 		}
 		
-		drawTargets(undistImg, "Radial", pointPairs);
+		drawPointPairs(undistImg, "Radial", pointPairs);
 
 	}
 
@@ -337,10 +329,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * Zeichnet Punkte an die Stellen der Zielkoorinaten in das uebergebene Bild und bringt es auf den Bildschirm
 	 * @param ip Bild in das die Punkte gezeichnet werden
 	 * @param s Name des Bildes
-	 * @param xPointPairs x-Koordinaten 
-	 * @param yPointPairs y-Koordinaten
+	 * @param pointPairs  Zu zeichnende Start und Ziel Koordinaten Punkte
 	 */
-	public static void drawTargets(ImageProcessor ip, String s, ArrayList<PointPair> pointPairs) {
+	public static void drawPointPairs(ImageProcessor ip, String s, ArrayList<PointPair> pointPairs) {
 		// Punkte in radial entzerrtes Bild malen
 		ImageProcessor res = ip.duplicate();
 		double xCenter = ip.getWidth() / 2;
@@ -472,7 +463,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			}
 		}
 
-		drawTargets(targetImag, "Affine", pointPairs);
+		drawPointPairs(targetImag, "Affine", pointPairs);
 
 		//Tranformation auf Punkt paare anwenden zur weiteren verwendung
 		for (int i = 0; i < pointPairs.size(); i++) {
