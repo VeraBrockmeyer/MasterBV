@@ -292,22 +292,26 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			for (int xImg = 0; xImg < distPicture.getWidth(); xImg++) {
 				
 				//Erzeuge Punkt mit Koordinatentransformation zum Gittermittelpunkt:
-				PointPair point = new PointPair(xImg, yImg, xCenter, yCenter);
+				PointPair pp = new PointPair(xImg, yImg, xCenter, yCenter);
 
 				//radiale Entzerrung mit den vorgebenen Koeffizienten: 
 				//x_distorted * (1+ a*r^2 + b*r^4 * c*r^6) = x_undistorted 
 				
-				point.x_dist = point.x_undist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
-				point.y_dist = point.y_undist / (1. + koeff[0] * point.r + koeff[1] * point.r * point.r + koeff[2] * point.r * point.r * point.r);
-
+				pp.x_dist = pp.x_undist / (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r);
+				pp.y_dist = pp.y_undist / (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r);
+				
 				//Koordinatenruecktransformation in ImageJ Koordinaten:
-				point.x_dist = point.x_dist + xCenter;
-				point.y_dist = point.y_dist + yCenter;
+				pp.x_dist = pp.x_dist + xCenter;
+				pp.y_dist = pp.y_dist + yCenter;
 				
 				//Entzerrtes Bild zeichnen:
-				if (point.x_dist < distPicture.getWidth() && point.y_dist < distPicture.getHeight()) 
+				if (pp.x_dist < distPicture.getWidth() && pp.y_dist < distPicture.getHeight()) 
 				{
-					undistImg.putPixel(xImg, yImg, distPicture.getProcessor().getPixel((int)point.x_dist, (int)point.y_dist));
+					undistImg.putPixel(xImg, yImg, distPicture.getProcessor().getPixel((int)Math.round(pp.x_dist), (int)Math.round(pp.y_dist)));
+				}
+				else
+				{
+					undistImg.putPixel(xImg, yImg,0);	//füllen mit weiß			
 				}
 			}
 		}
@@ -316,6 +320,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		for (int i = 0; i < pointPairs.size(); i++) 
 		{
 			PointPair pp = 	pointPairs.get(i);
+			
 			pp.x_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r) * pp.x_dist;
 			pp.y_dist = (1. + koeff[0] * pp.r + koeff[1] * pp.r*pp.r + koeff[2] * pp.r*pp.r*pp.r) * pp.y_dist;
 
@@ -336,17 +341,12 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		ImageProcessor res = ip.duplicate();
 		double xCenter = ip.getWidth() / 2;
 		double yCenter = ip.getHeight() / 2;
+		res.setColor(Color.WHITE);
 		
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
 		for (int i = 0; i < pointPairs.size(); i++) {
-			res.setColor(Color.GRAY);
-
-			res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 3, 3);
-
-			res.setColor(Color.BLACK);
-
-			res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 3, 3);
+		res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
 		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
@@ -480,18 +480,6 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
-	
-	/**
-	 * Berechnet den Abstand zum Gittermittelpunkt (r^2)
-	 * @param x x-Koordinate des Punktes in Mittelpunktorientierten Koordinaten
-	 * @param y y-Koordinate des Punktes in Mittelpunktorientierten Koordinaten
-	 * @return
-	 */
-	/*
-	public static double computeRadius2Center(double x, double y) {
-		return  x * x + y * y;
-	}
-	*/
 
 	/**
 	 * 

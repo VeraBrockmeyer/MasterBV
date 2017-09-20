@@ -34,7 +34,7 @@ public class PointPair {
 	
 	
 	/**
-	 * Konstruktor speichert den Punkt bezogen auf das Koordinatensystem des übergebenen Mittelpunktes
+	 * Konstruktor speichert den Punkt bezogen auf das Koordinatensystem des übergebenen Mittelpunktes und berechnet den Abstand zum Mittelpunkt
 	 * @param x_dist X-Coord of distorted Point
 	 * @param y_dist Y-Coord of distorted Point
 	 * @param x_undist X-Coord of undistorted Point
@@ -54,7 +54,7 @@ public class PointPair {
 	}
 	
 	/**
-	 * Konstruktor speichert den Punkt ohne Bezugskoordinatensystem
+	 * Konstruktor speichert den Punkt mit Bezugskoordinatensystem und berechnet den Abstand zum Mittelpunkt
 	 * @param x_undist X-Coord of undistorted Point
 	 * @param y_undist Y-Coord of undistorted Point
 	 * @param x0 X-Coord of image center
