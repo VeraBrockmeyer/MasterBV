@@ -1,7 +1,5 @@
 import java.awt.Color;
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
@@ -62,6 +60,16 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	private static final int nRow = 13;
 	
+	
+	/**
+	 * Anzahl der Gitter-Reihen zur Berechnung des optimalen Gitters
+	 */
+	private static final int XgridCenter = 1084;
+	
+	/**
+	 * Anzahl der Gitter-Reihen zur Berechnung des optimalen Gitters
+	 */
+	private static final int YgridCenter = 714;
 		
 	/**
 	 * Speicher fuer Punkt Paare
@@ -311,7 +319,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 				}
 				else
 				{
-					undistImg.putPixel(xImg, yImg,0);	//füllen mit weiß			
+					undistImg.putPixel(xImg, yImg,255);	//füllen mit weiß			
 				}
 			}
 		}
@@ -341,12 +349,16 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		ImageProcessor res = ip.duplicate();
 		double xCenter = ip.getWidth() / 2;
 		double yCenter = ip.getHeight() / 2;
-		res.setColor(Color.WHITE);
 		
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
 		for (int i = 0; i < pointPairs.size(); i++) {
-		res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
+			res.setColor(Color.BLACK);
+
+			res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
+
+			res.setColor(Color.WHITE);
+			res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 5, 5);
 		}
 
 		ImagePlus resImg = new ImagePlus(s, res);
@@ -495,7 +507,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		// set target data
 		double[] undistPoints = qf.realTargetPoints();
 		lsb.target(undistPoints);
-		double[] newStart = { -0.00001,0.000000001,-0.0000000000001 };
+		double[] newStart = { 1.e-10,1.e-10,1.e-10 };
 		// set initial parameters
 		lsb.start(newStart);
 		// set upper limit of evaluation time
