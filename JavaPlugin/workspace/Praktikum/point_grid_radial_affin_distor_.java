@@ -291,13 +291,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		for (int yImg = 0; yImg < distPicture.getHeight(); yImg++) {
 			for (int xImg = 0; xImg < distPicture.getWidth(); xImg++) {
 				
-				PointPair point = new PointPair();
-				
-				//Koordinatentransformation zum Gittermittelpunkt:
-				point.x_dist = xImg - xCenter;
-				point.y_dist = yImg - yCenter;
-				
-				point.r = computeRadius2Center(point.x_dist, point.y_dist);
+				//Erzeuge Punkt mit Koordinatentransformation zum Gittermittelpunkt:
+				PointPair point = new PointPair(xImg, yImg, xCenter, yCenter);
 
 				//radiale Entzerrung mit den vorgebenen Koeffizienten: 
 				//x_distorted * (1+ a*r^2 + b*r^4 * c*r^6) = x_undistorted 
@@ -501,9 +496,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 * @param y y-Koordinate des Punktes in Mittelpunktorientierten Koordinaten
 	 * @return
 	 */
+	/*
 	public static double computeRadius2Center(double x, double y) {
 		return  x * x + y * y;
 	}
+	*/
 
 	/**
 	 * 

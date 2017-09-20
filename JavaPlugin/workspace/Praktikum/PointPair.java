@@ -57,17 +57,14 @@ public class PointPair {
 	 * Konstruktor speichert den Punkt ohne Bezugskoordinatensystem
 	 * @param x_dist X-Coord of distorted Point
 	 * @param y_dist Y-Coord of distorted Point
-	 * @param x_undist X-Coord of undistorted Point
-	 * @param y_undist Y-Coord of undistorted Point
-	 * @param index Index des PointPairs in list
+	 * @param x0 X-Coord of image center
+	 * @param y0 Y-Coord of image center
 	 */
-	PointPair(double x_dist,double y_dist, double x_undist, double y_undist, double index)
+	PointPair(double x_dist,double y_dist, double x0, double y0)
 	{
-		this.x_dist=x_dist;
-		this.y_dist=y_dist;
-		this.x_undist=x_undist;
-		this.y_undist=y_undist;
-		this.index = index;
+		this.x_dist=x_dist - x0;
+		this.y_dist=y_dist - y0;
+		this.r = computeRadius2Center(this.x_dist, this.y_dist);
 	}
 	
 	
@@ -80,8 +77,8 @@ public class PointPair {
 
 	/**
 	 * Berechnet den Abstand zum Gittermittelpunkt für Koordinaten die auf den Gittermittelpunkt bezogen sind (x^2 + y^2)
-	 * @param x x-Koordinate des Punktes
-	 * @param y y-Koordinate des Punktes
+	 * @param x x-Koordinate des Punktes Mittelpunktbezogen
+	 * @param y y-Koordinate des Punktes Mittelpunktbezogen
 	 * @return
 	 */
 	private static double computeRadius2Center(double x, double y) {
