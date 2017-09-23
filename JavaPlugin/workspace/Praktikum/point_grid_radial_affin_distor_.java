@@ -12,8 +12,6 @@ import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.MathUtils;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -200,11 +198,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		double[][]B = new double[pointPairs.size()*2][9];
 		int counter = 0;
 		for (int i = 0; i < B.length; i+=2) {
-			double x_dist = pointPairs.get(counter).x_dist + xCenter;
-			double y_dist = pointPairs.get(counter).y_dist+ yCenter;
+			double x_dist = pointPairs.get(counter).x_dist;
+			double y_dist = pointPairs.get(counter).y_dist;
 			
-			double x_undist = pointPairs.get(counter).x_undist + xCenter;
-			double y_undist = pointPairs.get(counter).y_undist+ yCenter;
+			double x_undist = pointPairs.get(counter).x_undist;
+			double y_undist = pointPairs.get(counter).y_undist;
 			
 			B[i][0] = -x_dist;
 			B[i][1] = -y_dist;
@@ -233,7 +231,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		EigenDecomposition ed = new EigenDecomposition(AtA);
 		RealMatrix V = ed.getV();
-	
+			
 		double[][] pArray = new double[3][3];
 		
 		pArray[0][0]=V.getEntry(0,V.getRowDimension()-1);
@@ -253,12 +251,14 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		for (int y = 0; y < targetImg.getHeight(); y++) {
 			for (int x = 0; x < targetImg.getWidth(); x++) {
 				
-				double[] target  = {x,y,1};
+				double[] target  = {x-xCenter,y-yCenter,1};
 				RealVector t_vec = new ArrayRealVector(target, false);
-				RealVector coord_vec = pMatInv.operate(t_vec);
+				RealVector coord_vec = pMat.operate(t_vec);
 				double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
 				double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
 			
+				x_coord_vorlage+=xCenter;
+				y_coord_vorlage+=yCenter;
 
 				if (x_coord_vorlage>=0 && x_coord_vorlage < targetImg.getWidth() && y_coord_vorlage>=0 && y_coord_vorlage < targetImg.getHeight()) {
 					targetImg.putPixel(x, y, (int) Math.round(sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage , y_coord_vorlage)));
@@ -271,13 +271,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 		
 		for (int i = 0; i < pointPairs.size(); i++) {
-			double[] target  = {pointPairs.get(i).x_dist+xCenter,pointPairs.get(i).y_dist+yCenter,1};
+			double[] target  = {pointPairs.get(i).x_dist,pointPairs.get(i).y_dist,1};
 			RealVector t_vec = new ArrayRealVector(target, false);
-			RealVector coord_vec = pMat.operate(t_vec);
+			RealVector coord_vec = pMatInv.operate(t_vec);
 			double x_coord_vorlage = coord_vec.getEntry(0)/coord_vec.getEntry(2);
 			double y_coord_vorlage = coord_vec.getEntry(1)/coord_vec.getEntry(2);
-			pointPairs.get(i).x_dist = x_coord_vorlage-xCenter;
-			pointPairs.get(i).y_dist = y_coord_vorlage-yCenter;
+			pointPairs.get(i).x_dist = x_coord_vorlage;
+			pointPairs.get(i).y_dist = y_coord_vorlage;
 			
 		}
 
