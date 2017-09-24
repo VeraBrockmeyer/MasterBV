@@ -99,9 +99,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}
 	}
 
-
 	/**
 	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt-paare des Text Fensters in PointPair Objekte
+	 * @return PointPair Array aus der LandmarksDatei
 	 */
 	private ArrayList<PointPair> readData() {
 
@@ -188,17 +188,15 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	private void compute_draw_optimal_Grid(ImageProcessor ip)
 	{
-		int xCenter = distPicture.getProcessor().getWidth() / 2;
-		int yCenter = distPicture.getProcessor().getHeight() / 2; 
-		
 		 // zur einmaligen generierung der ziel koordinaten gitters:
+		
+		int x_offset = XgridCenter - nXCross2Corner * distCross;				 
+		int y_offset = YgridCenter - nYCross2Corner * distCross;
+		
 		for(int colid = 0; colid <= nCol; colid++)
 		{
 			for(int rowid = 0; rowid <= nRow; rowid++)
 			{
-				int x_offset = XgridCenter - nXCross2Corner * distCross;				 
-				int y_offset = YgridCenter - nYCross2Corner * distCross;
-
 				double x_undist = colid * distCross+ x_offset;
 				double y_undist = rowid * distCross + y_offset;
 				
