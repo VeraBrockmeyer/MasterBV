@@ -161,9 +161,11 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 							yCenter,
 							Integer.parseInt(numbers[0].trim()));// Index
 					
-					//draw undistorted cordinates:
-					 //ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
-					ip.drawString( "" + pp.r, (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter); 
+					//draw undistorted cordinates for debug check:
+					//ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
+					
+					//draw radius for debug check:
+					//ip.drawString( "" + pp.r, (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter); 
 					pointPairs.add(pp);
 
 				}
