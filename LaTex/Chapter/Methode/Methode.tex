@@ -38,10 +38,10 @@ Mit den Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ kann die radiale Ver
 
 \begin{equation}
 \label{equ:RDF}
-\begin{aligned}
-&x_u = & x_d*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + x_0\\
-&y_d = & y_d*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + y_0\\
-\end{aligned}
+\begin{split}
+x_u = x_d*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + x_0\\
+y_d = y_d*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + y_0
+\end{split}
 \end{equation}
 
 Die unbekannten Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ können mit einer nicht-linearen Ausgleichsrechnung approximiert werden indem das Minimierungsproblem mit der RDF moduliert wird. Ein effizientes Verfahren zur Approximierung der Koeffizienten ist die bekannte LMA~\cite{LevMarquardt}.
@@ -55,61 +55,26 @@ Es handelt sich somit um ein überbestimmtes System, welches nicht exakt lösbar
 Für die \textit{Methode der kleinsten Quadrate} wird die euklidische Norm des Residuums $b-Ax$ minimiert~\cite{dahmen2008numerik} und das entsprechende lineare Ausgleichsproblem wird wie in Formel~\ref{equ:LinAusgleich} formuliert. Hier gibt $N$ die Anzahl der Parameter und $M$ die Anzahl der gemessenen Wertepaare an. Die Matrix $A$ enthält die gesuchten Parameter $a_{i,j=1}$ und der Vektor $b$ alle gemessenen Werte.
 \begin{equation}
 \label{equ:LinAusgleich}
-\begin{aligned}
-& ||Ax^*-b||_2 = \min_{x\in \mathbb{R}^N} ||Ax-b||_2\\
-& mit\ A\in \mathbb{R}^{M\times N}\ und\ b\in \mathbb{R}^{N}
-\end{aligned}
+\begin{split}
+||Ax^*-b||_2 = \min_{x\in \mathbb{R}^N} ||Ax-b||_2\\
+mit\ A\in \mathbb{R}^{M\times N}\ und\ b\in \mathbb{R}^{N}
+\end{split}
 \end{equation}
 
 Lineare Ausgleichsprobleme können mit einer Vielzahl an verschieden Verfahren gelöst werden, wie zum Beispiel einer \textit{Cholesky}- beziehungsweise QR-Zerlegung oder der Singulärwertzerlegung.
-Doch diese Verfahren können nur dann angewendet werden, wenn der Messwert $y$ von allen Parametern linear abhängig ist. Ist dies nicht gegeben, handelt es nicht um ein nichtlineares Ausgleichsproblem, wie bei der RDF (vgl. Formel~\ref{equ:RDF}). Zur Lösung dieser Art von Ausgleichsverfahren werden in der Praxis das \textit{Gauß-Newton-Verfahren} (GNV) und die LMA angwendet. Letzteres ist eine effizientere Weiterentwicklung des GNV und eine geeignete Wahl um die Koeffizienten $\kappa$ der RDF zu approximieren.
+Doch diese Verfahren können nur dann angewendet werden, wenn der Messwert $y$ von allen Parametern linear abhängig ist. Ist dies nicht gegeben, handelt es nicht um ein nichtlineares Ausgleichsproblem, wie bei der RDF (vgl. Formel~\ref{equ:RDF}). Zur Lösung dieser Art von Ausgleichsverfahren werden in der Praxis das \textit{Gauß-Newton-Verfahren} (GMV) und die LMA angwendet. Letzteres ist eine effizientere Weiterentwicklung des GMV und eine geeignete Wahl um die Koeffizienten $\kappa$ der RDF zu approximieren.
 
 Im Sinne der \textit{Methode der kleinsten Quadrate} lässt sich das nichtlineare Ausgleichsproblem wie in Formel definieren~\cite{schwarz2011numerische}. $F(x)$ ist definiert als Abbildung $F: \mathbb{R}^N \arrowvert \mathbb{R}^M$ und $F_i()x:= y(t_i,x)-b_i\ mit\ i= 1,\dots,M$. 
 
 \begin{equation}
 \label{equ:LinAusgleich}
-\begin{aligned}
-||F(x^*)||_2 =& \min_{x\in \mathbb{R}^N} ||F(x)||_2\\
-\phi(x^*)=& \min_{x\in \mathbb{R}^N} ||\phi(x)||_2 = \frac{1}{2}||F(x)||_2^2 = \frac{1}{2}F(x)^TF(x)
-\end{aligned}
+\begin{split}
+||F(x^*)||_2 = \min_{x\in \mathbb{R}^N} ||F(x)||_2\\
+oder\\
+\phi(x^*)=\min_{x\in \mathbb{R}^N} ||\phi(x)||_2 = \frac{1}{2}||F(x)||_2^2 = \frac{1}{2}F(x)^TF(x)
+\end{split}
 \end{equation}
-
-Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gradient $\Delta\phi(x)$ an einem kritischen Punkt Null sein muss. Darum wird angenommen, dass der Gradient $\Delta\phi(x^*)$ ein lokales Minimum ist. Weiter ergibt sich durch Nachrechnen für $\Delta\phi(x)$ die Gleichung~\ref{equ:GradPhi} ergibt~\cite{dahmen2008numerik}, wobei $F'(x) \in \mathbb{R}^{M \times N}$ die Jacobi-Matrix von $F$ ist und für das iterative GNV benötigt wird.
-
-
-\begin{equation}
-\label{equ:GradPhi}
-\Delta\phi(x)=F'(x)^TF(x)
-\end{equation}
-
-Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden.
-
-\begin{equation}
-\label{equ:Newton}
-||F'(x^k)s^k+F(x^k)||_2 = \min_{s^k \in \mathbb{R}^N}||F'(x^k)s^k+F(x^k)||_2
-\end{equation}
-
-Das oben beschriebene Vorgehen wird wiederholt bis das Abbruchkriterium aus Formel~\ref{equ:Abbruchkriterium} erfüllt ist. Die Fehlertoleranz $\epsilon$ kann geeignet vom Nutzer vorgegeben werden.
-
-\begin{equation}
-\label{equ:Abbruchkriterium}
-||F'(x^k)F(x^k)||_2 \leq \epsilon\\
-\end{equation}
-
-Problematisch wird ein Lösungsverfahren mit GNV, wenn die $F$ keinen vollen Rang hat. In diesem Fall kann keine eindeutige Lösung approximiert werden. Dieses Problem umgeht die LMA in dem das Modell aus Formel~\ref{equ:Newton} durch den freiwählbaren Parameter $\mu>0$ in Formel~\ref{equ:Levenberg} erweitert wird. 
-
-\begin{equation}
-\label{equ:Levenberg}
-||
-\begin{pmatrix}
-F'(x^k)\\\nu I\\
-\end{pmatrix}
-s^k+\begin{pmatrix}
-F'(x^k)\\\emptyset\\
-\end{pmatrix}||_2 = \min
-\end{equation}
-
-Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht werden, welche eine deutliche Verbesserung in Richtung des lokalen Minimums bewirkt. Ein sehr großes $\mu$ verlangsamt die Konvergenz signifikant und mit einer sehr niedrigen Wahl kann unter Umständen keine Konvergenz gewährleistet werden. Aus diesem Grund wird das iterative Verfahren des GNV für die LMA um einen Zwischenschritt erweitert. Für jede Lösung $s^k$ wird getestet ob die Korrektur angemessen ist. Entspricht die ermittelte Korrektur nicht den Bedingungen wird $\mu$ entsprechend angepasst und $s^K$ erneut berechnet. Dieser Schritt wird solange iteriert bis die Bedingen erfüllt sind und im nächsten Schritt mit der Berechnung von $x^{k+1}$ fortgefahren werden kann~\cite{dahmen2008numerik}. Als Abbruchkriterium für die LVA gilt auch Formel~\ref{equ:Abbruchkriterium}.
+ 
 
 \section{System}
 
@@ -163,11 +128,12 @@ Danach erfolgt die Berechnung der Kreuzpunkte über eine geschachtelte Schleife 
 \begin{equation}
 \label{equ:gitter_kreuzpunkte}
 \begin{split}
-x_{undist} = colid * distCross+ x{_offset}\\
-y_{undist} = rowid * distCross + y{_offset}
+x_{undist} = colid * distCross+ x_{offset}\\
+y_{undist} = rowid * distCross + y_{offset}
 \end{split}
 \end{equation}
 
+An diesen Koordinaten müssen nur noch Ovale gezeichnet werden und es entsteht das in Abb. \ref{fig:gitter-optimal} dargestellte Bild, welches nun in UnwarpJ genutzt werden kann.
 
 \begin{figure}[H]
 \includegraphics[width=\textwidth]{Images/optimales-gitter.png}
