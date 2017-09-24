@@ -117,7 +117,7 @@ F'(x^k)\\\emptyset\\
 \end{pmatrix}||_2 = \min
 \end{equation}
 
-Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht werden, welche eine deutliche Verbesserung in Richtung des lokalen Minimums bewirkt. Ein sehr großes $\mu$ verlangsamt die Konvergenz signifikant und mit einer sehr niedrigen Wahl kann unter Umständen keine Konvergenz gewährleistet werden. Aus diesem Grund wird das iterative Verfahren des GNV für die LMA um einen Zwischenschritt erweitert. Für jede Lösung $s^k$ wird getestet ob die Korrektur angemessen ist. Entspricht die ermittelte Korrektur nicht den Bedingungen wird $\mu$ entsprechend angepasst und $s^K$ erneut berechnet. Dieser Schritt wird solange iteriert bis die Bedingen erfüllt sind und im nächsten Schritt mit der Berechnung von $x^{k+1}$ fortgefahren werden kann~\cite{dahmen2008numerik}. Als Abbruchkriterium für die LVA gilt auch Formel~\ref{equ:Abbruchkriterium}.
+Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht werden, welche eine deutliche Verbesserung in Richtung des lokalen Minimums bewirkt. Ein sehr großes $\mu$ verlangsamt die Konvergenz signifikant und mit einer sehr niedrigen Wahl kann unter Umständen keine Konvergenz gewährleistet werden. Aus diesem Grund wird das iterative Verfahren des GNV für die LMA um einen Zwischenschritt erweitert. Für jede Lösung $s^k$ wird getestet ob die Korrektur angemessen ist. Entspricht die ermittelte Korrektur nicht den Bedingungen wird $\mu$ entsprechend angepasst und $s^K$ erneut berechnet. Dieser Schritt wird solange iteriert bis die Bedingen erfüllt sind und im nächsten Schritt mit der Berechnung von $x^{k+1}$ fortgefahren werden kann~\cite{dahmen2008numerik}. Als Abbruchkriterium für die LMA gilt auch Formel~\ref{equ:Abbruchkriterium}.
 
  
 
@@ -267,7 +267,7 @@ Der Startvektor $x_0$ wird mit Koeffizienten initialisiert die keine Verzerrung 
 
 Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abb. \ref{img:UML} zu entnehmen.
 
-\begin{figure}[H]
+\begin{figure}
 	\center
 	\includegraphics[width=\textheight, angle =90]{Images/Class Diagram1.png}
 	\caption{UML Klassendiagramm}
