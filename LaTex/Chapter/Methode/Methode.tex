@@ -1,3 +1,5 @@
+%!TEX root = ..\..\main.tex
+
 \section{Methode}
 Lineare Kameramodell wie das projektive Transformation bilden den Weltpunkt, Bildhauptpunkt und das Projektionszentrum auf dem selben optischen Strahl ab. Im idealen Fall werden nach der Transformation alle Bildgeraden wieder als Geraden dargestellt. In der Realität bilden gerade Kamerasysteme mit Weitwinkelobjektiven die Geraden gebogen ab, da die Brennweite klein ist und der Blickwinkel sehr groß~\cite{HartleyRadDist}. Ein weiterer Grund ist ein mangelhaftes Linsendesign mit einer fehlerhaften Krümmung der einzelnen Linsenelementen in einem Objektiv~\cite{WengRadDist}\cite{Zhang:1996:EGT:844381.845228}. Diese verzerrten Abbildungen werden in der Regel als kissenförmig beschrieben und Radiale Linsenverzerrung genannt. In einigen Fällen kann es aber auch zu tonnenförmigen Verzerrungen kommen. Neben den linearen Kamermodellen muss also für die vollständige Nachbildung einer realen Kamera auch die Linsenverzerrung berücksichtigt werden. 
 
@@ -146,11 +148,18 @@ An diesen Koordinaten müssen nur noch Ovale gezeichnet werden und es entsteht d
 \subsection{Initialisierung des Minimierungsproblems}
 
 \subsection{Plugin-Klassen}
-\todo[inline, color=red]{Artjom}
+\todo[inline, color=yellow]{Artjom}
 
 Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abb. \ref{img:UML} zu entnehmen.
 
-\paragraph{point\_grid\_radial\_affin\_distor\_}
+\begin{figure}[H]
+	\center
+	\includegraphics[width=\textheight, angle =90]{Images/Class Diagram1.png}
+	\caption{UML Klassendiagramm}
+	\label{img:UML}
+\end{figure}
+
+\subsubsection{point\_grid\_radial\_affin\_distor\_}
 Hauptklasse der Anwendung. Implementiert das Interface \emph{PluginFilter} um über ImageJ aufgerufen werden zu können.
 
 Die Klasse besitzt folgende Methoden und deren Funktion:
@@ -159,27 +168,28 @@ Die Klasse besitzt folgende Methoden und deren Funktion:
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
 		\hline
 		run & Main-Methode des PlugIns in der die Optimierung aufgerufen wird\\ \hline
-		setup & Konstruktor-Methode des PlugIns in dem die Bildreferenz gespeichert wird\\ \hline
-		readData & Liest aus einer in ImageJ geöffneten Textdatei Punkt-Paare ein für Start- und Ziel-Koordinten\\\hline
-		computeDrawRadialTransformation & \\ \hline
-		drawTargets & Zeichnet Punkte an den übergebenen Ziel-Koordinaten in das übergebene Bild\\ \hline
-		computeRadius2Center & Berechnet anhand der Parameter den Abstand zum Gittermittelpunkt\\ \hline
+		setup & Konstruktor-Methode des PlugIns mit der die Bildreferenz abgespeichert wird\\ \hline
+		compute\_draw\_optimal\_Grid & Berechnung und Abbildung des optimalen Gitters anhand der Klassenkonstanten \\ \hline
+		readData & Liest aus einer in ImageJ geöffneten UnwarpJ-Landmarks Datei Punkt-Paare ein für die Start- und Ziel-Koordinaten\\\hline
+		computeDrawRadialTransformation & Startet die Berechnung der radialen Verzerrung und zeichnet das dazugehörige entzerrte Bild\\ \hline
+		computeDrawProjective-Transformation & Berechnet anhand von Punkpaaren die projektive Transformation und gibt die Abbildung zurück. Zusätzlich werden die Punkt-Paare mit transformiert.\\ \hline
+		drawTargets & Zeichnet Punkte an den übergebenen Start- und Ziel-Koordinaten in das übergebene Bild\\ \hline
 		compute\_radial\_dist\_koeff & Berechnet mit dem LevenbergMarquadt Optimierer die Koeffizienten der Radialen Verzerrung der übergebenen Punkt und gibt die Koeffizienten zurück\\ 
 		\hline
 	\end{tabular}
 	\caption{Methoden der point\_grid\_radial\_affin\_distor\_ Klasse}
 \end{table}
 
-\paragraph{SimplePair}
-Eine Einfache Klasse zum Speichern der Vorgabe- und Ziel Koordinaten und des Abstandes zum Mittelpunkt.
+\subsubsection{PointPair}
+Eine einfache Klasse zum Speichern der Vorgabe- und Ziel- Koordinaten und des Abstandes zum Mittelpunkt. Sie besitzt einen Konstruktor bei dem der Mittelpunktabstand anhand der Parameter automatisch berechnet und gespeichert wird. Dies ist nützlich, da so der Radius nicht in einem externen Aufruf berechnet werden muss.
 
-\paragraph{RadialDistFunction}
-Klasse zum Erzeugen der Funktionen für den Optimierer.
+\subsubsection{RadialDistFunction}
+Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer.
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
 		\hline
-		RadialDistFunction & Konstruktor der Klasse. Es wird ein SimplePoint Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
+		RadialDistFunction & Konstruktor der Klasse. Es wird ein PointPair Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
 		realTargetPoints & Gibt ein Array aus welches nur die Ziel-Koordinaten enthält. Dieses wird für den Optimierer benötigt.\\ \hline
 		retMVF & Funktion zur Modellierung der Radialen Verzerrung für den Optimierer. Berechnet zu den Vorgegeben Koeffizienten und einer Start-Koordinate die Ziel-Koordinate\\ \hline
 		retMMF & Jacobi-Matrix-Funktion zur Berechnung der Ableitung nach den einzelnen vom Optimierer vorgegebenen Koeffizienten \\ 
@@ -188,9 +198,3 @@ Klasse zum Erzeugen der Funktionen für den Optimierer.
 	\caption{Methoden der RadialDistFunction Klasse}
 \end{table}
 
-\begin{figure}[H]
-	\center
-	\includegraphics[height=\textheight]{Images/Class Diagram1.png}
-	\caption{UML Klassendiagramm}
-	\label{img:UML}
-\end{figure}
