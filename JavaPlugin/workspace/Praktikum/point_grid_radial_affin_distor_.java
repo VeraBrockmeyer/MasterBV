@@ -308,8 +308,8 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	/**
 	 * Startet die Berechnung der Radialen entzerrung und zeichnet das Ergebnis
 	 * @param distPicture Verzerrtes IJ Bild
-	 * @param xPointPairs Punkt-Paare fuer Start und Ziel Koordinaten der x-Achse
-	 * @param yPointPairs Punkt-Paare fuer Start und Ziel Koordinaten der x-Achse
+	 * @param pointPairs Punkt-Paare fuer Start und Ziel Koordinaten 
+	 * 
 	 */
 	public static void computeDrawRadialTransformation(ImagePlus distPicture, ArrayList<PointPair> pointPairs) 
 	{
@@ -375,21 +375,24 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	public static void drawPointPairs(ImageProcessor ip, String s, ArrayList<PointPair> pointPairs) {
 		// Punkte in radial entzerrtes Bild malen
 		ImageProcessor res = ip.duplicate();
+		res.set(255);
 		double xCenter = ip.getWidth() / 2;
 		double yCenter = ip.getHeight() / 2;
 
 		// Zeichne ziel punkte:
 		res.setLineWidth(3);
 		for (int i = 0; i < pointPairs.size(); i++) {
-			res.setColor(Color.BLACK);
-
-			res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 5, 5);
-
-			res.setColor(Color.WHITE);
-			res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 5, 5);
+			res.setColor(Color.GRAY);
+			res.setLineWidth(2);
+			res.drawLine((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), (int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter));
+//			res.drawOval((int) (pointPairs.get(i).x_dist+xCenter), (int) (pointPairs.get(i).y_dist+yCenter), 2, 2);
+//			res.setColor(Color.WHITE);
+//			res.drawOval((int) (pointPairs.get(i).x_undist+xCenter), (int) (pointPairs.get(i).y_undist+yCenter), 2, 2);
 		}
-
-		ImagePlus resImg = new ImagePlus(s, res);
+		ImageProcessor res2 = ip.duplicate();
+		ImagePlus resImg2 = new ImagePlus(s, res2);
+		resImg2.show();
+		ImagePlus resImg = new ImagePlus(s+"_onlydiffs", res);
 		resImg.show();
 
 	}
@@ -397,7 +400,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	
 	/**
 	 * 
-	 * @param punkt_paare Array mit SimplePair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
+	 * @param punkt_paare Array mit PointPair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
 	 * @return Koefizienten der Radialen-Verzerrung nach Levenberg-Marquadt
 	 */
 	public static double[] compute_radial_dist_koeff(ArrayList<PointPair> punkt_paare) {
@@ -410,7 +413,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		double[] undistPoints = qf.realTargetPoints();
 		lsb.target(undistPoints);
 
-		double[] newStart = { 1.e-10,1.e-10,1.e-10 };
+		double[] newStart = { 0.,0.,0. };
 
 		// set initial parameters
 		lsb.start(newStart);

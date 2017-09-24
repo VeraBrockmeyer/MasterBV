@@ -1,8 +1,5 @@
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.math3.analysis.DifferentiableMultivariateVectorFunction;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
@@ -13,7 +10,6 @@ import ij.IJ;
  * @author 
  *
  */
-@SuppressWarnings("deprecation")
 public class RadialDistFunction 
 {
 
