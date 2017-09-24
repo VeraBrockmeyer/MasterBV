@@ -85,8 +85,12 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	public void run(ImageProcessor img) {
 		try {
-			readData();
-			drawPointPairs(distPicture.getProcessor(), "SourceImage", pointPairs);
+			
+			//compute_draw_optimal_Grid(distPicture.getProcessor()); //für den ersten durchlauf zum einzeichnen des optimalen gitters
+			
+			this.pointPairs = readData();
+			
+			drawPointPairs(distPicture.getProcessor(), "SourceImage with PointPairs", pointPairs);
 			//distPicture=computeDrawProjectiveTransformation(distPicture, pointPairs);
 			computeDrawRadialTransformation(distPicture, pointPairs);
 
@@ -97,16 +101,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 
 	/**
-	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
-	 * Zusaetzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswaehlen zu koennen
+	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt-paare des Text Fensters in PointPair Objekte
 	 */
-	private void readData() {
+	private ArrayList<PointPair> readData() {
 
+		ArrayList<PointPair> pointPairs = new ArrayList<PointPair>();
+		
 		//Fuer ein optimal zentrierte Gitterabbildung kann die Bildmitte berechnet werden. Ansonnsten hier die koordinaten des Gittermittelpunktes im Bild angeben
 		int xCenter = distPicture.getProcessor().getWidth() / 2;
 		int yCenter = distPicture.getProcessor().getHeight() / 2; 
 	
-		ImageProcessor ip = distPicture.getProcessor().duplicate();
+		//ImageProcessor ip = distPicture.getProcessor().duplicate(); //erzeuge kopie des Ausgangsbildes zum Anzeigen der eingelesenen Punkt Paare oder des Radius
 
 		// Textfenster mit Punktpaare Textdtei waehlen:
 		java.awt.Window[] non_img_windows = WindowManager.getAllNonImageWindows();
@@ -126,7 +131,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// abbrechen wenn keine eingabe:
 		if (gd.wasCanceled())
-			return;
+			return null;
 		choise = gd.getNextChoice();
 
 		// Punktpaare einlesen:
@@ -156,38 +161,51 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 							xCenter,
 							yCenter,
 							Integer.parseInt(numbers[0].trim()));// Index
-
 					
-//					 //berechne x_target und y_target und gebe sie aus - NUR
-//					// zur einmaligen generierung der Pointpairs:
-//					 int colid = (int)(pp.index / nRow); // 0 - 8 reihe
-//					 int rowid = (int)(pp.index - colid * nRow) ; // 0- 15 spalte
-//					
-//					 int x_offset = xCenter - nXCross2Corner * distCross;
-//					 //koorinate mittelpunkt gitter - anzahl der gitterpunkte  nach links
-//					 int y_offset = yCenter - nYCross2Corner * distCross;
-//					 //koorinate mittelpunkt gitter - anzahl der gitterpunkte nach oben
-//					
-//					 double x_undist = colid * distCross+ x_offset;
-//					 double y_undist = rowid * distCross + y_offset;
-//					
-//					 ip.drawOval((int)x_undist, (int)y_undist, 3, 3);
-//					 
-//					 pp.x_undist= x_undist-xCenter;
-//					 pp.y_undist=y_undist-yCenter;
+					//draw undistorted cordinates for debug check:
+					//ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
 					
-					//draw undistorted cordinates:
-					 //ip.drawString((pp.x_dist + "/ " + pp.y_undist), (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter);
-					ip.drawString( "" + pp.r, (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter); 
+					//draw radius for debug check:
+					//ip.drawString( "" + pp.r, (int)pp.x_dist+xCenter,(int) pp.y_dist+yCenter); 
 					pointPairs.add(pp);
 
 				}
 
 			}
 		}
-		//Ausgabe der Zielpunkte
-		ImagePlus img = new ImagePlus("Undist Points",ip);
-		img.show();
+		
+		//Ausgabe der Bildpunkte oder des Radius optional fürs debugging:
+		//ImagePlus img = new ImagePlus("Debug Points", ip);
+		//img.show();
+		
+		return pointPairs;
+			
+	}
+	
+	/**
+	 * Zeichnet das optimale Gitter anhand der Klassenvariablen-Parametern in das übergeben Bild
+	 * @param ip Imageprocessor des Bildes
+	 */
+	private void compute_draw_optimal_Grid(ImageProcessor ip)
+	{
+		int xCenter = distPicture.getProcessor().getWidth() / 2;
+		int yCenter = distPicture.getProcessor().getHeight() / 2; 
+		
+		 // zur einmaligen generierung der ziel koordinaten gitters:
+		for(int colid = 0; colid <= nCol; colid++)
+		{
+			for(int rowid = 0; rowid <= nRow; rowid++)
+			{
+				int x_offset = XgridCenter - nXCross2Corner * distCross;				 
+				int y_offset = YgridCenter - nYCross2Corner * distCross;
+
+				double x_undist = colid * distCross+ x_offset;
+				double y_undist = rowid * distCross + y_offset;
+				
+				ip.setColor(Color.WHITE);
+				ip.drawOval((int)x_undist, (int)y_undist, 5, 5);
+			}
+		}	 
 	}
 	
 	//TODO Ursprung Verschieben!!!!
