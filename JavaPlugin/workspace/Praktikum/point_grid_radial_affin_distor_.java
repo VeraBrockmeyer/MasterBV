@@ -87,7 +87,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		try {
 			readData();
 			drawPointPairs(distPicture.getProcessor(), "SourceImage", pointPairs);
-			distPicture=computeDrawProjectiveTransformation(distPicture, pointPairs);
+			//distPicture=computeDrawProjectiveTransformation(distPicture, pointPairs);
 			computeDrawRadialTransformation(distPicture, pointPairs);
 
 		} catch (Exception exc) {
@@ -376,133 +376,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	}
 
-	//TODO Ursprung verschieben!!!!
-	/**
-	 * Berechnet und zeichnet die Affine entzerrung anhand der x und y Punkt paare
-	 * Die X und Y Arrays muessen eine zusammengehoerige Reihenfolge haben
-	 * @param xPointPairs Vorlage und Ziel-Koorinaten der x-Achse
-	 * @param yPointPairs Vorlage und Ziel-Koorinaten der y-Achse
-	 * @return Affiner Verzerrungsvektor p
-	 */
-	public static RealVector computeDrawAffineTransformation(ImagePlus sourcePicture, ArrayList<PointPair> pointPairs) {
-
-		/// Verschiebungsvektor und matrix berechnen
-
-		// Minimum von B*p -c;
-		double[][] B = new double[2 * pointPairs.size()][6];// Matrix B =
-																// koordinaten
-																// vorlage
-		// double[] p;//p = geschter verschiebungsmatrix und vektor
-		double[] c = new double[2 * pointPairs.size()];// c = koordinaten
-														// transformiert
-
-		// konstruiert man die (2n,6) -Matrix
-		for (int i = 0; i < pointPairs.size(); i++) {
-			// i = 0 => 0,1 => i *2, i*2+1
-			// i = 1 => 2,3
-			// i = 2 => 4,5
-			// i = 3 => 6,7
-
-			//
-			
-			PointPair pp = pointPairs.get(i);
-			c[i * 2] = pp.x_undist;// x_i'
-			c[i * 2 + 1] = pp.y_undist; // y_i'
-
-			B[i * 2][0] = pp.x_dist; // x_i
-			B[i * 2][1] = pp.y_dist; // y_i
-			B[i * 2][2] = 1;
-			B[i * 2][3] = 0;
-			B[i * 2][4] = 0;
-			B[i * 2][5] = 0;
-
-			B[i * 2 + 1][0] = 0;
-			B[i * 2 + 1][1] = 0;
-			B[i * 2 + 1][2] = 0;
-			B[i * 2 + 1][3] = pp.x_dist; // x_i
-			B[i * 2 + 1][4] = pp.y_dist; // y_i
-			B[i * 2 + 1][5] = 1;
-		}
-
-		// B*p = c => p = (Bt * B)^-1 * Bt * c
-
-		RealVector c_vec = new ArrayRealVector(c, false);
-		RealMatrix B_mat = MatrixUtils.createRealMatrix(B);
-
-		// Bt
-		RealMatrix B_mat_transp = B_mat.transpose();
-
-		// Bt * B
-		RealMatrix Bt_B = B_mat_transp.multiply(B_mat);
-
-		// (Bt * B)^-1
-		RealMatrix Bt_B_inv = MatrixUtils.inverse(Bt_B);
-
-		// (Bt * B)^-1 * Bt * c
-		RealVector p = Bt_B_inv.operate(B_mat_transp.operate(c_vec));
-
-		double[] verschiebungsmatrix = new double[] { p.getEntry(0), p.getEntry(1), p.getEntry(3), p.getEntry(4) };
-		double[] verschiebungsvektor = new double[] { p.getEntry(2), p.getEntry(5) };
-		double[][] verzerrungsmatrix = { { verschiebungsmatrix[0], verschiebungsmatrix[1], verschiebungsvektor[0] },
-				{ verschiebungsmatrix[2], verschiebungsmatrix[3], verschiebungsvektor[1] }, { 0, 0, 1 } };
-
-		IJ.log("a11: " + verschiebungsmatrix[0] + " a12: " + verschiebungsmatrix[1] + " a21: " + verschiebungsmatrix[2]
-				+ " a22: " + verschiebungsmatrix[3] + " t1: " + verschiebungsvektor[0] + " t2: "
-				+ verschiebungsvektor[1]);
-
-		// Berechnen Sie aus den Werten die Umkehrabbildung,
-
-		// erzeugen Sie ein neues Bild gleicher Groeﬂe wie das Eingabebild
-		ImageProcessor targetImag = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
-
-		// berechnen Sie es nach dem Target-to-Source-Verfahren,
-		// d.h.berechnen Sie zu jedem Punkt im neuen Bild durch die
-		// Umkehrabbildung die Koordinaten im
-		// Eingangsbild und holen Sie von dort den Wert des Pixels. Eine
-		// Interpolation wird nicht verlangt.
-
-		RealMatrix Bi_mat = MatrixUtils.createRealMatrix(verzerrungsmatrix);
-		DecompositionSolver Bi_mat_solver = new LUDecomposition(Bi_mat).getSolver();
-
-		// zielbild durchlaufen und werde aus vorlagebild abrufen
-		for (int y = 0; y < targetImag.getHeight(); y++) {
-			for (int x = 0; x < targetImag.getWidth(); x++) {
-				double[] t_h = { x, y, 1 };
-				RealVector t_vec = new ArrayRealVector(t_h, false);
-				RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
-																					// berechnen
-
-				int x_coord_vorlage = (int) Math.round(coord_vec.getEntry(0));
-				int y_coord_vorlage = (int) Math.round(coord_vec.getEntry(1));
-
-				if (x_coord_vorlage < targetImag.getWidth() && y_coord_vorlage < targetImag.getHeight()) {
-					targetImag.putPixel(x, y, (int) Math.round(
-							sourcePicture.getProcessor().getInterpolatedPixel(x_coord_vorlage, y_coord_vorlage)));
-				} else // mit schwarz auffuellen
-				{
-					targetImag.putPixel(x, y, 0);
-				}
-			}
-		}
-
-		drawPointPairs(targetImag, "Affine", pointPairs);
-
-		//Tranformation auf Punkt paare anwenden zur weiteren verwendung
-		for (int i = 0; i < pointPairs.size(); i++) {
-			PointPair pp = pointPairs.get(i);
-			double[] t_h = {pp.x_dist, pp.y_dist, 1 };
-			RealVector t_vec = new ArrayRealVector(t_h, false);
-			RealVector coord_vec = Bi_mat_solver.getInverse().operate(t_vec); // Transformation
-																				// berechnen
-			pp.x_dist = coord_vec.getEntry(0);
-			pp.y_dist = coord_vec.getEntry(1);
-		}
-		
-		return p;
-
-	}
-
-
+	
 	/**
 	 * 
 	 * @param punkt_paare Array mit SimplePair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
