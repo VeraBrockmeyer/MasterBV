@@ -115,7 +115,66 @@ Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht
 
 \subsection{Ausgleich der radialen Linsenverzerrung}
 \todo[inline, color=red]{Vera}
+
 \subsubsection{Ermittlung der Punktepaare}
+\todo[inline, color=yellow]{Artjom}
+
+UnwarpJ erzeugt in der Landmarks-Datei die Punkte-Paare nicht in der Reihenfolge in der die Punkte  gesetzt wurden, deswegen war es nicht möglich die Ziel-Koordinaten zur Laufzeit zu berechnen. Hierzu war es notwendig zuerst in das Ausgangsbild das optimale Gitter einzuzeichnen und danach die Punkt-Paare mit Hilfe von UnwarpJ zu setzen.
+
+Dafür wurden in der Plugin-Klasse die Gitterparameter als Konstanten angelegt und das Zeichnen der Gitterpunkte in der Methode $compute\_draw\_optimal\_Grid()$ realisiert.
+%kapitelverweis?
+
+%formeln zur berechnung
+Zur Berechnung der Ziel-Koordinaten wurden folgende Werte siehe Tab. \ref{tab:gitter_koordinaten_variablen} genutzt:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|p{0.5\textwidth}|}
+\toprule
+Variablen-Name & Wert & Funktion\\
+\midrule
+distCross & 111 & Abstand der Gitter-Kreuzpunkte\\
+\midrule
+nXCross2Corner & 10 & Anzahl der Gitter-Kreuzpunkte vom Mittelpunkt bis zum Ende des Gitters\\
+nYCross2Corner & 6 & \\
+\midrule
+nCol & 21 & Anzahl der Gitter-Spalten\\
+nRow & 13 & Anzahl der Gitter-Reihen\\
+\midrule
+XgridCenter & 1084 & Gitter-Mittelpunkt \\
+YgridCenter & 714 & \\
+\bottomrule
+\end{tabular}
+\caption{Variablen zur Berechnung des optimalen Gitters ausgeführt als Klassenkonstanten}
+\label{tab:gitter_koordinaten_variablen}
+\end{table}
+
+Zuerst erfolgt die Berechnung des oberen-linken Gittereckpunktes als $x_{offset}$ und $y_{offset}$. 
+
+\begin{equation}
+\label{equ:gitter_offset}
+\begin{split}
+x_{offset} = XgridCenter - nXCross2Corner * distCross\\		 y_{offset} = YgridCenter - nYCross2Corner * distCross
+\end{split}
+\end{equation}
+
+Danach erfolgt die Berechnung der Kreuzpunkte über eine geschachtelte Schleife für jede Gittter-Reihe und Gitter-Spalte. 
+
+\begin{equation}
+\label{equ:gitter_kreuzpunkte}
+\begin{split}
+x_{undist} = colid * distCross+ x{_offset}\\
+y_{undist} = rowid * distCross + y{_offset}
+\end{split}
+\end{equation}
+
+
+\begin{figure}[H]
+\includegraphics[width=\textwidth]{Images/optimales-gitter.png}
+\label{fig:gitter-optimal}
+\caption{Erzeugte Zielpunkte mit Hilfe der $compute\_draw\_optimal\_Grid()$ Methode}
+\end{figure}
+
 \subsubsection{Aufstellung des Problems}
 \subsubsection{Initialisierung des Minimierungsproblems}
 \subsubsection{Plugin-Klassen}
@@ -154,7 +213,7 @@ Klasse zum Erzeugen der Funktionen für den Optimierer.
 		\hline
 		RadialDistFunction & Konstruktor der Klasse. Es wird ein SimplePoint Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
 		realTargetPoints & Gibt ein Array aus welches nur die Ziel-Koordinaten enthält. Dieses wird für den Optimierer benötigt.\\ \hline
-		retMVF & Funktion zur Modellierung der Radialen Verzerrung für den Optimierer. BErechnet zu den Vorgegeben Koeffizienten und einer Start-Koordinate die Ziel-Koordinate\\ \hline
+		retMVF & Funktion zur Modellierung der Radialen Verzerrung für den Optimierer. Berechnet zu den Vorgegeben Koeffizienten und einer Start-Koordinate die Ziel-Koordinate\\ \hline
 		retMMF & Jacobi-Matrix-Funktion zur Berechnung der Ableitung nach den einzelnen vom Optimierer vorgegebenen Koeffizienten \\ 
 		\hline
 	\end{tabular}
@@ -163,7 +222,7 @@ Klasse zum Erzeugen der Funktionen für den Optimierer.
 
 \begin{figure}[H]
 	\center
-	\includegraphics[height=\textheight]{Images/UML.JPG}
+	\includegraphics[height=\textheight]{Images/Class Diagram1.png}
 	\caption{UML Klassendiagramm}
 	\label{img:UML}
 \end{figure}
