@@ -206,8 +206,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 		}	 
 	}
 	
-	//TODO Ursprung Verschieben!!!!
+	
+	/**
+	 * Funktion zur projektiven Transformation einer Abbildung anhand von Punkt-Paaren
+	 * @param sourcePicture Bild dass transformiert werden soll
+	 * @param pointPairs Punkt-Paare mit Start- und Zielkoordinaten mit denen die Transformation berechnet werden soll. Wichtig: Punkte werden mit transformiert!
+	 * @return projektiv transformierte Abbildung
+	 */
 	public static ImagePlus computeDrawProjectiveTransformation(ImagePlus sourcePicture, ArrayList<PointPair> pointPairs){
+		
+		//TODO Ursprung Verschieben!!!!
+		
 		ShortProcessor targetImg = new ShortProcessor(sourcePicture.getWidth(), sourcePicture.getHeight(), true);
 		int xCenter = targetImg.getWidth() / 2;
 		int yCenter = targetImg.getHeight() / 2; 
@@ -286,6 +295,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			}
 		}
 		
+		//Anwendung der Transformation auf die übergebenen Punktpaare:
 		for (int i = 0; i < pointPairs.size(); i++) {
 			double[] target  = {pointPairs.get(i).x_dist,pointPairs.get(i).y_dist,1};
 			RealVector t_vec = new ArrayRealVector(target, false);
@@ -297,10 +307,10 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			
 		}
 
+		//Neue Punktpaare in das Bild zeichnen:
 		drawPointPairs(targetImg, "Projective Transformation",pointPairs);
 		return new ImagePlus("Projected Image",targetImg);
 	}
-	
 	
 	
 	/**
