@@ -139,8 +139,8 @@ An diesen Koordinaten müssen nur noch Ovale gezeichnet werden und es entsteht d
 
 \begin{figure}[H]
 \includegraphics[width=\textwidth]{Images/optimales-gitter.png}
-\label{fig:gitter-optimal}
 \caption{Erzeugte Zielpunkte mit Hilfe der $compute\_draw\_optimal\_Grid()$ Methode}
+\label{fig:gitter-optimal}
 \end{figure}
 
 \subsection{Aufstellung des Problems}
@@ -184,7 +184,7 @@ Die Klasse besitzt folgende Methoden und deren Funktion:
 Eine einfache Klasse zum Speichern der Vorgabe- und Ziel- Koordinaten und des Abstandes zum Mittelpunkt. Sie besitzt einen Konstruktor bei dem der Mittelpunktabstand anhand der Parameter automatisch berechnet und gespeichert wird. Dies ist nützlich, da so der Radius nicht in einem externen Aufruf berechnet werden muss.
 
 \subsubsection{RadialDistFunction}
-Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer.
+Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer ~\cite{optimizer_example}. Die Klasse besitzt folgende Methoden:
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
