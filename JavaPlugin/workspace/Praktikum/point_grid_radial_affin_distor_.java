@@ -88,9 +88,9 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 			
 			//compute_draw_optimal_Grid(distPicture.getProcessor()); //für den ersten durchlauf zum einzeichnen des optimalen gitters
 			
-			readData();
+			this.pointPairs = readData();
 			
-			drawPointPairs(distPicture.getProcessor(), "SourceImage", pointPairs);
+			drawPointPairs(distPicture.getProcessor(), "SourceImage with PointPairs", pointPairs);
 			//distPicture=computeDrawProjectiveTransformation(distPicture, pointPairs);
 			computeDrawRadialTransformation(distPicture, pointPairs);
 
@@ -101,16 +101,17 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 
 	/**
-	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt paare des Text Fensters in SimplePair Objekte, die intern gespeichert werden
-	 * Zusaetzlich kann hier das Optimale Gitter berechnet werden um in UwrapJ die Zielpunkte auswaehlen zu koennen
+	 * oeffnet die Auswahl eines Textfensters und laedt alle Punkt-paare des Text Fensters in PointPair Objekte
 	 */
-	private void readData() {
+	private ArrayList<PointPair> readData() {
 
+		ArrayList<PointPair> pointPairs = new ArrayList<PointPair>();
+		
 		//Fuer ein optimal zentrierte Gitterabbildung kann die Bildmitte berechnet werden. Ansonnsten hier die koordinaten des Gittermittelpunktes im Bild angeben
 		int xCenter = distPicture.getProcessor().getWidth() / 2;
 		int yCenter = distPicture.getProcessor().getHeight() / 2; 
 	
-		ImageProcessor ip = distPicture.getProcessor().duplicate();
+		//ImageProcessor ip = distPicture.getProcessor().duplicate(); //erzeuge kopie des Ausgangsbildes zum Anzeigen der eingelesenen Punkt Paare oder des Radius
 
 		// Textfenster mit Punktpaare Textdtei waehlen:
 		java.awt.Window[] non_img_windows = WindowManager.getAllNonImageWindows();
@@ -130,7 +131,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 		// abbrechen wenn keine eingabe:
 		if (gd.wasCanceled())
-			return;
+			return null;
 		choise = gd.getNextChoice();
 
 		// Punktpaare einlesen:
@@ -172,9 +173,13 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 			}
 		}
-		//Ausgabe der Zielpunkte
-		ImagePlus img = new ImagePlus("Undist Points",ip);
-		img.show();
+		
+		//Ausgabe der Bildpunkte oder des Radius optional fürs debugging:
+		//ImagePlus img = new ImagePlus("Debug Points", ip);
+		//img.show();
+		
+		return pointPairs;
+			
 	}
 	
 	/**

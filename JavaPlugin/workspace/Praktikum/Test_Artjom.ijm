@@ -7,8 +7,7 @@ run("point grid radial affin distor ");
 
 */
 
-
 open("D:\\Documents\\GitHub\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\18mm_11-1_8bit.tif");
+open("D:\\Documents\\GitHub\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\Landmarks_Various.txt");
 
-open("D:\\Documents\\GitHub\\MasterBV\\JavaPlugin\\workspace\\Praktikum\\UndistPoints_kleinererRadius.txt");
 run("point grid radial affin distor ");
