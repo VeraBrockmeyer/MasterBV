@@ -1,13 +1,10 @@
 %!TEX root = ..\..\main.tex
 
 \section{Materialien}\label{sec:Materials}
-\todo[inline, color=yellow]{Artjom}
 
 \subsection{Hardware}\label{sec:Hardware}
 
-Während des Entwicklungsphase wurde das Plugin auf den beiden Computern ausgeführt, die in den Tab. \ref{tab:Computer1} und Tab. \ref{tab:Computer2} beschreiben sind.
-
-Beide Computer mussten die Software ausführen können die in Abs. \ref{sec:Software} beschreiben sind-
+Während des Entwicklungsphase wurde das Plugin auf den beiden Computern ausgeführt, die in den Tabelle \ref{tab:Computer1} und Tabelle \ref{tab:Computer2} beschreiben sind. Beide Computer mussten die Software ausführen können die in Abschnitt \ref{sec:Software} beschreiben sind.
 
 %Veras Computer:
 \begin{table}[H]
@@ -63,7 +60,7 @@ Eclipse IDE for Java Developers Version: Neon.2 Release (4.6.2) wurde zur Entwic
 
 
 \subsubsection{Java}
-Java ist eine objektorientierte Programmiersprache und gleichzeitig eine Laufzeitumgebung für diese Programme. Ein besonderer Vorteil von Java gegenüber ähnlichen objektorientierten Sprachen wie z.B. C\texttt{++} ist die automatisierte Speicherverwaltung. \cite{java}
+Java ist eine objektorientierte Programmiersprache und gleichzeitig eine Laufzeitumgebung für diese Programme. Ein besonderer Vorteil von Java gegenüber ähnlichen objektorientierten Sprachen wie z.B. C\texttt{++} ist die automatisierte Speicherverwaltung~\cite{java}. 
 
 Das Plugin zur radialen Entzerrung von regelmäßigen Punktrastern wurde in der Programmiersprache Java (Version $ 1.8.0 31 $) geschrieben, damit es in ImageJ genutzt werden kann. ImageJ bietet bestimmte Interface-Klassen an durch deren Implementierung von ImageJ ausführbare Komponenten geschrieben werden können.
 
@@ -79,7 +76,7 @@ Java lief in der Laufzeitumgebung Java SE Runtime Environment (Version $ 1.8.0 3
 
 \subsubsection{UnwarpJ}
 
-UnwarpJ ist ein für ImageJ entwickeltes Plugin, das die elastische Registrierung von zwei Bildern ermöglicht, indem es ein Quellbild verformt, so dass es einem Zielbild ähnelt. 
+UnwarpJ ist ein für ImageJ entwickeltes Plugin, das die elastische Registrierung von zwei Bildern ermöglicht, indem es ein Quellbild transformiert, so dass es einem Zielbild ähnelt. 
 Es stehen drei Betriebsarten zur Verfügung: 
 
 \begin{enumerate}
@@ -88,7 +85,7 @@ Es stehen drei Betriebsarten zur Verfügung:
 \item ein gemischter Modus, bei dem interaktive Landmarken nur verwendet werden, um eine ansonsten automatische Registrierungsprozedur anzuzeigen.
 \end{enumerate}
 
-Das Deformationsmodell besteht aus kubischen Splines, die Glätte und Vielseitigkeit gewährleisten. Das Registrierungs-Kriterium enthält einen Vektor-Spline-Regularisierungsterm, um die Deformation physisch realistisch zu beschränken.\cite{unwrapj}
+Das Deformationsmodell besteht aus kubischen Splines, die Glätte und Vielseitigkeit gewährleisten. Das Registrierungs-Kriterium enthält einen Vektor-Spline-Regularisierungsterm, um die Deformation physisch realistisch zu beschränken~\cite{unwrapj}.
 
 In dieser Anwendung wird es jedoch nicht zur Registrierung sondern nur zum Erzeugen von Landmarken (Punk-Paaren) genutzt. Diese werden in einer Textdatei gespeichert, welche im programmierten Plug-In eingelesen und verwendet wird.
 
