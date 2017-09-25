@@ -2,12 +2,12 @@
 
 \section{Methode}
 \label{Methode}
-In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und der LMA~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
+In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und die LMA~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
 
 \subsection{Radial Distance Function (RDF)}
 \label{sec:RDF}
 \todo[inline, color=yellow]{Vera}
-Die oben beschriebene kissenförmige Linsenverzerrung ist demzufolge konvex und strikt symmetrisch um die optische Achse~\cite{WengRadDist}. Es kann daher voraus gesetzt werden, dass der Bildhauptpunkt $c= \begin{pmatrix}
+Die oben beschriebene kissenförmige Linsenverzerrung ist demzufolge konvex und strikt symmetrisch um die optische Achse~\cite{WengRadDist}. Es kann daher vorausgesetzt werden, dass der Bildhauptpunkt $c= \begin{pmatrix}
 c_x & c_y
 \end{pmatrix}^T$ im Zentrum der radialen Verzerrung liegt. In diesem Fall kann die Linsenverzerrung, wie in Formel~\ref{equ:BasicModel} moduliert werden. Hier werden die unverzerrten und linearen Bildkoordinaten als $u= \begin{pmatrix}
 u_x & u_y
@@ -55,8 +55,8 @@ u_y = d_y*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + c_y
 Die unbekannten Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ können mit einer nicht-linearen Ausgleichsrechnung approximiert werden indem das Minimierungsproblem mit der RDF moduliert wird. Ein effizientes Verfahren zur Approximierung der Koeffizienten ist die bekannte LMA~\cite{LevMarquardt}.
 \subsection{Levenberg-Marquard-Approximation}
 \todo[inline, color=yellow]{Vera}
-Die \textit{Methode der kleinsten Quadrate} von Gauß ist ein bekanntes Verfahren, welches die unbekannten Parameter $\alpha$ von überbestimmten Systemen aus linearen oder nichtlinearen Gleichungen annähert. Diese Systeme werden in der Regel aus Wertepaaren moduliert, welche in voraus gemessen und bestimmt wurden. Der Messwert wird im folgenden als $y$ und der als ideale angenommene Wert $t$ bezeichnet.
-Im Fall der einer Radialen Entzerrung sollte für die Anzahl der Wertepaare $M>3$ sein um eine gute Näherung der Parameter beziehungsweise Koeffizienten zu ermitteln.
+Die \textit{Methode der kleinsten Quadrate} von Gauß ist ein bekanntes Verfahren, welches die unbekannten Parameter $\alpha$ von überbestimmten Systemen aus linearen oder nichtlinearen Gleichungen annähert. Diese Systeme werden in der Regel aus Wertepaaren moduliert, welche im Voraus gemessen und bestimmt wurden. Der Messwert wird im folgenden als $y$ und der als ideale angenommene Wert $t$ bezeichnet.
+Im Fall der einer radialen Entzerrung sollte für die Anzahl der Wertepaare $M>3$ sein um eine gute Näherung der Parameter beziehungsweise Koeffizienten zu ermitteln.
 Es handelt sich somit um ein überbestimmtes System, welches nicht exakt lösbar ist. In diesem Fall kann nur verlangt werden, dass die Abweichungen und Residuen minimal sind~\cite{schwarz2011numerische}. 
 
 Für die \textit{Methode der kleinsten Quadrate} wird die euklidische Norm des Residuums $b-Ax$ minimiert~\cite{dahmen2008numerik} und das entsprechende lineare Ausgleichsproblem wird wie in Formel~\ref{equ:LinAusgleich} formuliert. Hier gibt $N$ die Anzahl der Parameter und $M$ die Anzahl der gemessenen Wertepaare an. Die Matrix $A$ enthält die gesuchten Parameter $a_{i,j=1}$ und der Vektor $b$ alle gemessenen Werte.
@@ -71,7 +71,7 @@ Für die \textit{Methode der kleinsten Quadrate} wird die euklidische Norm des R
 Lineare Ausgleichsprobleme können mit einer Vielzahl an verschieden Verfahren gelöst werden, wie zum Beispiel einer \textit{Cholesky}- beziehungsweise QR-Zerlegung oder der Singulärwertzerlegung.
 Doch diese Verfahren können nur dann angewendet werden, wenn der Messwert $y$ von allen Parametern linear abhängig ist. Ist dies nicht gegeben, handelt es nicht um ein nichtlineares Ausgleichsproblem, wie bei der RDF (vgl. Formel~\ref{equ:RDF}). Zur Lösung dieser Art von Ausgleichsverfahren werden in der Praxis das \textit{Gauß-Newton-Verfahren} (GNV) und die LMA angwendet. Letzteres ist eine effizientere Weiterentwicklung des GNV und eine geeignete Wahl um die Koeffizienten $\kappa$ der RDF zu approximieren.
 
-Im Sinne der \textit{Methode der kleinsten Quadrate} lässt sich das nichtlineare Ausgleichsproblem wie in Formel definieren~\cite{schwarz2011numerische}. $F(x)$ ist definiert als Abbildung $F: \mathbb{R}^N \arrowvert \mathbb{R}^M$ und $F_i()x:= y(t_i,x)-b_i\ mit\ i= 1,\dots,M$. 
+Im Sinne der \textit{Methode der kleinsten Quadrate} lässt sich das nichtlineare Ausgleichsproblem wie in Formel \ref{equ:LinAusgleich} definieren~\cite{schwarz2011numerische}. $F(x)$ ist definiert als Abbildung $F: \mathbb{R}^N \arrowvert \mathbb{R}^M$ und $F_i()x:= y(t_i,x)-b_i\ mit\ i= 1,\dots,M$. 
 
 \begin{equation}
 \label{equ:LinAusgleich}
@@ -81,7 +81,7 @@ Im Sinne der \textit{Methode der kleinsten Quadrate} lässt sich das nichtlinear
 \end{aligned}
 \end{equation}
 
-Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gradient $\Delta\phi(x)$ an einem kritischen Punkt Null sein muss. Darum wird angenommen, dass der Gradient $\Delta\phi(x^*)$ ein lokales Minimum ist. Weiter ergibt sich durch Nachrechnen für $\Delta\phi(x)$ die Gleichung~\ref{equ:GradPhi} ergibt~\cite{dahmen2008numerik}, wobei $F'(x) \in \mathbb{R}^{M \times N}$ die Jacobi-Matrix von $F$ ist und für das iterative GNV benötigt wird.
+Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gradient $\Delta\phi(x)$ an einem kritischen Punkt Null sein muss. Darum wird angenommen, dass der Gradient $\Delta\phi(x^*)$ ein lokales Minimum ist. Weiter ergibt sich durch Nachrechnen für $\Delta\phi(x)$ die Gleichung~\ref{equ:GradPhi}, wobei $F'(x) \in \mathbb{R}^{M \times N}$ die Jacobi-Matrix von $F$ ist und für das iterative GNV benötigt wird~\cite{dahmen2008numerik}.
 
 
 \begin{equation}
@@ -89,7 +89,7 @@ Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gr
 \Delta\phi(x)=F'(x)^TF(x)
 \end{equation}
 
-Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel~\ref{equ:Newton}~\cite{LevMarquardt}. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden~\cite{schwarz2011numerische}.
+Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel~\ref{equ:Newton}~\cite{LevMarquardt}. Während des iterativen Prozesses wird $x^k$ immer weiter an die gesuchte Lösung angenähert, in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden~\cite{schwarz2011numerische}.
 
 \begin{equation}
 \label{equ:Newton}
@@ -103,7 +103,7 @@ Das oben beschriebene Vorgehen wird wiederholt bis das Abbruchkriterium aus Form
 ||F'(x^k)F(x^k)||_2 \leq \epsilon\\
 \end{equation}
 
-Problematisch wird ein Lösungsverfahren mit GNV, wenn die $F$ keinen vollen Rang hat. In diesem Fall kann keine eindeutige Lösung approximiert werden. Dieses Problem umgeht die LMA in dem das Modell aus Formel~\ref{equ:Newton} durch den freiwählbaren Parameter $\mu>0$ in Formel~\ref{equ:Levenberg} erweitert wird. 
+Problematisch wird ein Lösungsverfahren mit GNV, wenn $F$ keinen vollen Rang hat. In diesem Fall kann keine eindeutige Lösung approximiert werden. Dieses Problem umgeht die LMA in dem das Modell aus Formel~\ref{equ:Newton} durch den freiwählbaren Parameter $\mu>0$ in Formel~\ref{equ:Levenberg} erweitert wird. 
 
 \begin{equation}
 \label{equ:Levenberg}
@@ -116,14 +116,14 @@ F'(x^k)\\\emptyset\\
 \end{pmatrix}||_2 = \min
 \end{equation}
 
-Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht werden, welche eine deutliche Verbesserung in Richtung des lokalen Minimums bewirkt. Ein sehr großes $\mu$ verlangsamt die Konvergenz signifikant und mit einer sehr niedrigen Wahl kann unter Umständen keine Konvergenz gewährleistet werden. Aus diesem Grund wird das iterative Verfahren des GNV für die LMA um einen Zwischenschritt erweitert. Für jede Lösung $s^k$ wird getestet ob die Korrektur angemessen ist. Entspricht die ermittelte Korrektur nicht den Bedingungen wird $\mu$ entsprechend angepasst und $s^K$ erneut berechnet. Dieser Schritt wird solange iteriert bis die Bedingen erfüllt sind und im nächsten Schritt mit der Berechnung von $x^{k+1}$ fortgefahren werden kann~\cite{dahmen2008numerik}. Als Abbruchkriterium für die LMA gilt auch Formel~\ref{equ:Abbruchkriterium}.
+Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht werden, welche eine deutliche Verbesserung in Richtung des lokalen Minimums bewirkt. Ein sehr großes $\mu$ verlangsamt die Konvergenz signifikant und mit einer sehr niedrigen Wahl kann unter Umständen keine Konvergenz gewährleistet werden. Aus diesem Grund wird das iterative Verfahren des GNV für die LMA um einen Zwischenschritt erweitert. Für jede Lösung $s^k$ wird getestet ob die Korrektur angemessen ist. Entspricht die ermittelte Korrektur nicht den Bedingungen wird $\mu$ entsprechend angepasst und $s^K$ erneut berechnet. Dieser Schritt wird solange iteriert bis die Bedingungen erfüllt sind und im nächsten Schritt mit der Berechnung von $x^{k+1}$ fortgeführt werden kann~\cite{dahmen2008numerik}. Als Abbruchkriterium für die LMA gilt auch Formel~\ref{equ:Abbruchkriterium}.
 
  
 
 \section{System}
 \label{sec:System}
 
-In den folgenden Abschnitten wird auf das implementierte System eingegangen. Zunächst wird in Abschnitt~\ref{sec:Wertpaare} dargelegt wie Wertpaare und insbesondere die idealen Koordinaten des Punktrasters ermittelt wurden. Im Anschluss wird im Abschnitt~\ref{sec:Problem} das Problem des LMA moduliert und in Abschnitt~\ref{sec:Minimierung} die Initialisierung des LMA beschrieben. Zuletzt wird aufgezeigt wie das Java Plugin aufgebaut wurde und alle implementierten Funktionen erläutert.
+In den folgenden Abschnitten wird auf das implementierte System eingegangen. Zunächst wird in Abschnitt~\ref{sec:Wertpaare} dargelegt wie Wertpaare und insbesondere die idealen Koordinaten des Punktrasters ermittelt wurden. Im Anschluss wird im Abschnitt~\ref{sec:Problem} das Problem der LMA moduliert und in Abschnitt~\ref{sec:Minimierung} die Initialisierung der LMA beschrieben. Zuletzt wird aufgezeigt wie das Java Plugin aufgebaut wurde und alle implementierten Funktionen erläutert.
 
 
 \subsection{Ermittlung der Wertpaare}
@@ -132,35 +132,33 @@ In den folgenden Abschnitten wird auf das implementierte System eingegangen. Zun
 UnwarpJ erzeugt in der \textit{Landmarks}-Datei die Wertepaare nicht in der Reihenfolge in der die Punkte gesetzt wurden, deswegen war es nicht möglich die Ziel-Koordinaten zur Laufzeit zu berechnen. Hierzu war es notwendig zuerst in das Ausgangsbild das optimale Gitter einzuzeichnen und danach die Punkt-Paare mit Hilfe von UnwarpJ zu setzen.
 
 Dafür wurden in der Plugin-Klasse die Gitterparameter als Konstanten angelegt und das Zeichnen der Gitterpunkte in der Methode \texttt{compute\_draw\_optimal\_Grid()} (vgl. Abschnitt~\ref{sec:PluginKlassen}) realisiert.
-%kapitelverweis?
 
-%formeln zur berechnung
 Zur Berechnung der Ziel-Koordinaten wurden die folgenden Werte aus Tabelle \ref{tab:gitter_koordinaten_variablen} genutzt:
 
-\begin{table}
+\begin{table}[H]
 \centering
 \begin{tabular}{|l|l|p{0.5\textwidth}|}
-\toprule
+\hline
 Variablen-Name & Wert & Funktion\\
-\midrule
+\toprule[2px]
 $dist$ & 111 & Abstand der Gitter-Kreuzpunkte\\
-\midrule
+\hline
 $n_x$ & 10 & Anzahl der Gitter-Kreuzpunkte vom Mittelpunkt bis zum Ende des Gitters\\
 $n_y$ & 6 & \\
-\midrule
+\hline
 $n_{col}$ & 21 & Anzahl der Gitter-Spalten\\
 $n_{row}$ & 13 & Anzahl der Gitter-Reihen\\
-\midrule
+\hline
 $x_g^0$ & 1084 & Gitter-Mittelpunkt \\
 $y_g^0$ & 714 & \\
-\bottomrule
+\hline
 \end{tabular}
 \caption{Variablen zur Berechnung des optimalen Gitters ausgeführt als Klassenkonstanten. Alle Werte beziehen sich auf das Bild \texttt{18mm\_11-1.tif}. }
 \label{tab:gitter_koordinaten_variablen}
 \end{table}
 
 Zuerst erfolgt die Berechnung des oberen-linken Gittereckpunktes $\begin{pmatrix}
-x_{offset} & y_{offset}\end{pmatrix}^T \in \mathbb{R}^2$ und nach den Gleichungen~\ref{equ:gitter_offset}. 
+x_{offset} & y_{offset}\end{pmatrix}^T \in \mathbb{R}^2$  nach den Gleichungen~\ref{equ:gitter_offset}. 
 
 \begin{equation}
 \label{equ:gitter_offset}
@@ -170,7 +168,7 @@ y_{offset} &= y_g^0 - n_y * dist
 \end{aligned}
 \end{equation}
 
-Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gitter-Reihe und Gitter-Spalte. $i_{col}$ und $i_{row}$ geben den Index der Zeilen an.
+Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gitter-Reihe und Gitter-Spalte. Die Variablen $i_{col}$ und $i_{row}$ geben den Index der Zeilen bzw. Spalten an.
 
 \begin{equation}
 \label{equ:gitter_kreuzpunkte}
@@ -190,9 +188,12 @@ An diesen Koordinaten werden die entsprechenden Punkte in das Ausgangsbild gezei
 
 \subsection{Aufstellung des Problems}
 \label{sec:Problem}
-In Formel~\ref{equ:Levenberg} wird das Modell des LMA definiert und in Formel~\ref{equ:RDF} die RDF angeben. 
+
+In Formel~\ref{equ:Levenberg} wird das Modell der LMA definiert und in Formel~\ref{equ:RDF} die RDF angeben. 
 Für den Ausgleich eines radial verzerrten Bildes muss zunächst das entsprechende Modell für die RDF definiert werden. Zunächst wird die Matrix $F(x) \in \mathbb{R}^M$ mit $x = \begin{pmatrix}
 \kappa_1 & \kappa_2 & \kappa_3\end{pmatrix}^T$ laut Formel~\ref{equ:Problem} aufgestellt. Wie bereits in Abschnitt~\ref{sec:RDF} erwähnt wird aus nummerischen Gründen die Form $r^2$ verwendet, welche den Rundungsfehler und den Rechenaufwand minimiert. 
+
+\todo[inline, color=red]{Vera: $r^2$ ersetzen}
 
 \begin{equation}
 \label{equ:Problem}
@@ -256,14 +257,17 @@ u_y^M&
 \end{equation}
 Der Startvektor $x_0$ wird mit Koeffizienten initialisiert die keine Verzerrung beschreiben. Es gilt also für $x_0 = \begin{pmatrix}
 0 & 0 & 0
-\end{pmatrix}^T$. Um unnötigen Rechenaufwand wird die maximale Anzahl von Iterationen auf $500$ und die maximale Anzahl von Rechenschritten auf den doppelten Wert festgelegt.
+\end{pmatrix}^T$. Zur Beschränkung der Rechenzeit des Optimierers wird die maximale Anzahl von Iterationen auf $500$ und die maximale Anzahl von Rechenschritten auf den doppelten Wert festgelegt.
+
+%@Vera: vorher stand da das:
+%Um unnötigen Rechenaufwand wird die maximale Anzahl von Iterationen auf $500$ und die maximale Anzahl von Rechenschritten auf den doppelten Wert festgelegt.
 
 \subsection{Plugin-Klassen}
 \label{sec:PluginKlassen}
 
 Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abbildung~\ref{img:UML} zu entnehmen.
 
-\begin{figure}
+\begin{figure}[H] %muss gesetzt werden sonnst rutscht das bild in ein anderes kapitel
 	\center
 	\includegraphics[width=\textheight, angle =90]{Images/Class Diagram1.png}
 	\caption{UML Klassendiagramm}
@@ -285,7 +289,7 @@ Die Klasse besitzt folgende Methoden und deren Funktion:
 		\texttt{computeDrawRadial Transformation()} & Startet die Berechnung der radialen Verzerrung und zeichnet das dazugehörige entzerrte Bild\\ \hline
 		\texttt{computeDrawProjective Transformation()} & Berechnet anhand von Punkpaaren die projektive Transformation und gibt die Abbildung zurück. Zusätzlich werden die Punkt-Paare mit transformiert.\\ \hline
 		\texttt{drawTargets()} & Zeichnet Punkte an den übergebenen Start- und Ziel-Koordinaten in das übergebene Bild\\ \hline
-		\texttt{compute\_radial\_dist\_koeff()} & Berechnet mit dem Levenberg-Marquadt Optimierer die Koeffizienten der Radialen Verzerrung der übergebenen Punkt und gibt die Koeffizienten zurück\\ 
+		\texttt{compute\_radial\_dist\_koeff()} & Berechnet mit dem Levenberg-Marquadt Optimierer die Koeffizienten der radialen Verzerrung der übergebenen Punkte und gibt die Koeffizienten zurück\\ 
 		\hline
 	\end{tabular}
 	\caption{Methoden der \texttt{point\_grid\_radial\_affin\_distor\_} Klasse}
@@ -295,7 +299,7 @@ Die Klasse besitzt folgende Methoden und deren Funktion:
 Eine einfache Klasse zum Speichern der Vorgabe- und Ziel- Koordinaten und des Abstandes zum Mittelpunkt. Sie besitzt einen Konstruktor bei dem der Mittelpunktabstand anhand der Parameter automatisch berechnet und gespeichert wird. Dies ist nützlich, da so der Radius nicht in einem externen Aufruf berechnet werden muss.
 
 \subsubsection{RadialDistFunction}
-Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer ~\cite{optimizer_example}. Die Klasse besitzt folgende Methoden:
+Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer~\cite{optimizer_example}. Die Klasse besitzt folgende Methoden:
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
