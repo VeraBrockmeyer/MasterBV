@@ -1,9 +1,8 @@
 %!TEX root = ..\..\main.tex
 
 \section{Methode}
-Lineare Kameramodell wie das projektive Transformation bilden den Weltpunkt, Bildhauptpunkt und das Projektionszentrum auf dem selben optischen Strahl ab. Im idealen Fall werden nach der Transformation alle Bildgeraden wieder als Geraden dargestellt. In der Realität bilden gerade Kamerasysteme mit Weitwinkelobjektiven die Geraden gebogen ab, da die Brennweite klein ist und der Blickwinkel sehr groß~\cite{HartleyRadDist}. Ein weiterer Grund ist ein mangelhaftes Linsendesign mit einer fehlerhaften Krümmung der einzelnen Linsenelementen in einem Objektiv~\cite{WengRadDist}\cite{Zhang:1996:EGT:844381.845228}. Diese verzerrten Abbildungen werden in der Regel als kissenförmig beschrieben und Radiale Linsenverzerrung genannt. In einigen Fällen kann es aber auch zu tonnenförmigen Verzerrungen kommen. Neben den linearen Kamermodellen muss also für die vollständige Nachbildung einer realen Kamera auch die Linsenverzerrung berücksichtigt werden. 
-
-In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und der Levenberg-Marquard-Approximation (LMA)~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
+\label{Methode}
+In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und der LMA~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
 
 \subsection{Radial Distance Function (RDF)}
 \label{sec:RDF}
@@ -90,7 +89,7 @@ Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gr
 \Delta\phi(x)=F'(x)^TF(x)
 \end{equation}
 
-Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden.
+Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel~\ref{equ:Newton}~\cite{LevMarquardt}. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden~\cite{schwarz2011numerische}.
 
 \begin{equation}
 \label{equ:Newton}
@@ -122,21 +121,21 @@ Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht
  
 
 \section{System}
+\label{sec:System}
 
 In den folgenden Abschnitten wird auf das implementierte System eingegangen. Zunächst wird in Abschnitt~\ref{sec:Wertpaare} dargelegt wie Wertpaare und insbesondere die idealen Koordinaten des Punktrasters ermittelt wurden. Im Anschluss wird im Abschnitt~\ref{sec:Problem} das Problem des LMA moduliert und in Abschnitt~\ref{sec:Minimierung} die Initialisierung des LMA beschrieben. Zuletzt wird aufgezeigt wie das Java Plugin aufgebaut wurde und alle implementierten Funktionen erläutert.
 
 
 \subsection{Ermittlung der Wertpaare}
 \label{sec:Wertpaare}
-\todo[inline, color=yellow]{Artjom}
 
 UnwarpJ erzeugt in der \textit{Landmarks}-Datei die Wertepaare nicht in der Reihenfolge in der die Punkte gesetzt wurden, deswegen war es nicht möglich die Ziel-Koordinaten zur Laufzeit zu berechnen. Hierzu war es notwendig zuerst in das Ausgangsbild das optimale Gitter einzuzeichnen und danach die Punkt-Paare mit Hilfe von UnwarpJ zu setzen.
 
-Dafür wurden in der Plugin-Klasse die Gitterparameter als Konstanten angelegt und das Zeichnen der Gitterpunkte in der Methode $compute\_draw\_optimal\_Grid()$ realisiert.
+Dafür wurden in der Plugin-Klasse die Gitterparameter als Konstanten angelegt und das Zeichnen der Gitterpunkte in der Methode \texttt{compute\_draw\_optimal\_Grid()} (vgl. Abschnitt~\ref{sec:PluginKlassen}) realisiert.
 %kapitelverweis?
 
 %formeln zur berechnung
-Zur Berechnung der Ziel-Koordinaten wurden folgende Werte siehe Tabelle \ref{tab:gitter_koordinaten_variablen} genutzt:
+Zur Berechnung der Ziel-Koordinaten wurden die folgenden Werte aus Tabelle \ref{tab:gitter_koordinaten_variablen} genutzt:
 
 \begin{table}
 \centering
@@ -154,9 +153,6 @@ $n_{row}$ & 13 & Anzahl der Gitter-Reihen\\
 \midrule
 $x_g^0$ & 1084 & Gitter-Mittelpunkt \\
 $y_g^0$ & 714 & \\
-\midrule
-$i_{col}$ & - & Index der Spalten \\
-$i_{row}$ & - & Index der Zeilen\\
 \bottomrule
 \end{tabular}
 \caption{Variablen zur Berechnung des optimalen Gitters ausgeführt als Klassenkonstanten. Alle Werte beziehen sich auf das Bild \texttt{18mm\_11-1.tif}. }
@@ -174,7 +170,7 @@ y_{offset} &= y_g^0 - n_y * dist
 \end{aligned}
 \end{equation}
 
-Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gittter-Reihe und Gitter-Spalte. 
+Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gitter-Reihe und Gitter-Spalte. $i_{col}$ und $i_{row}$ geben den Index der Zeilen an.
 
 \begin{equation}
 \label{equ:gitter_kreuzpunkte}
@@ -263,9 +259,9 @@ Der Startvektor $x_0$ wird mit Koeffizienten initialisiert die keine Verzerrung 
 \end{pmatrix}^T$. Um unnötigen Rechenaufwand wird die maximale Anzahl von Iterationen auf $500$ und die maximale Anzahl von Rechenschritten auf den doppelten Wert festgelegt.
 
 \subsection{Plugin-Klassen}
-\todo[inline, color=yellow]{Artjom}
+\label{sec:PluginKlassen}
 
-Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abb. \ref{img:UML} zu entnehmen.
+Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abbildung~\ref{img:UML} zu entnehmen.
 
 \begin{figure}
 	\center
@@ -275,24 +271,24 @@ Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollstän
 \end{figure}
 
 \subsubsection{point\_grid\_radial\_affin\_distor\_}
-Hauptklasse der Anwendung. Implementiert das Interface \emph{PluginFilter} um über ImageJ aufgerufen werden zu können.
+Hauptklasse der Anwendung. Implementiert das Interface \texttt{PluginFilter} um über ImageJ aufgerufen werden zu können.
 
 Die Klasse besitzt folgende Methoden und deren Funktion:
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
 		\hline
-		run & Main-Methode des PlugIns in der die Optimierung aufgerufen wird\\ \hline
-		setup & Konstruktor-Methode des PlugIns mit der die Bildreferenz abgespeichert wird\\ \hline
-		compute\_draw\_optimal\_Grid & Berechnung und Abbildung des optimalen Gitters anhand der Klassenkonstanten \\ \hline
-		readData & Liest aus einer in ImageJ geöffneten UnwarpJ-Landmarks Datei Punkt-Paare ein für die Start- und Ziel-Koordinaten\\\hline
-		computeDrawRadialTransformation & Startet die Berechnung der radialen Verzerrung und zeichnet das dazugehörige entzerrte Bild\\ \hline
-		computeDrawProjective-Transformation & Berechnet anhand von Punkpaaren die projektive Transformation und gibt die Abbildung zurück. Zusätzlich werden die Punkt-Paare mit transformiert.\\ \hline
-		drawTargets & Zeichnet Punkte an den übergebenen Start- und Ziel-Koordinaten in das übergebene Bild\\ \hline
-		compute\_radial\_dist\_koeff & Berechnet mit dem LevenbergMarquadt Optimierer die Koeffizienten der Radialen Verzerrung der übergebenen Punkt und gibt die Koeffizienten zurück\\ 
+		\texttt{run()} & Main-Methode des PlugIns in der die Optimierung aufgerufen wird\\ \hline
+		\texttt{setup()} & Konstruktor-Methode des PlugIns mit der die Bildreferenz abgespeichert wird\\ \hline
+		\texttt{compute\_draw\_optimal\_Grid()} & Berechnung und Abbildung des optimalen Gitters anhand der Klassenkonstanten \\ \hline
+		\texttt{readData()} & Liest aus einer in ImageJ geöffneten UnwarpJ-Landmarks Datei Punkt-Paare ein für die Start- und Ziel-Koordinaten\\\hline
+		\texttt{computeDrawRadial Transformation()} & Startet die Berechnung der radialen Verzerrung und zeichnet das dazugehörige entzerrte Bild\\ \hline
+		\texttt{computeDrawProjective -Transformation()} & Berechnet anhand von Punkpaaren die projektive Transformation und gibt die Abbildung zurück. Zusätzlich werden die Punkt-Paare mit transformiert.\\ \hline
+		\texttt{drawTargets()} & Zeichnet Punkte an den übergebenen Start- und Ziel-Koordinaten in das übergebene Bild\\ \hline
+		\texttt{compute\_radial\_dist\_koeff()} & Berechnet mit dem Levenberg-Marquadt Optimierer die Koeffizienten der Radialen Verzerrung der übergebenen Punkt und gibt die Koeffizienten zurück\\ 
 		\hline
 	\end{tabular}
-	\caption{Methoden der point\_grid\_radial\_affin\_distor\_ Klasse}
+	\caption{Methoden der \texttt{point\_grid\_radial\_affin\_distor\_} Klasse}
 \end{table}
 
 \subsubsection{PointPair}
@@ -304,12 +300,12 @@ Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer ~\cite{
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
 		\hline
-		RadialDistFunction & Konstruktor der Klasse. Es wird ein PointPair Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
-		realTargetPoints & Gibt ein Array aus welches nur die Ziel-Koordinaten enthält. Dieses wird für den Optimierer benötigt.\\ \hline
-		retMVF & Funktion zur Modellierung der Radialen Verzerrung für den Optimierer. Berechnet zu den Vorgegeben Koeffizienten und einer Start-Koordinate die Ziel-Koordinate\\ \hline
-		retMMF & Jacobi-Matrix-Funktion zur Berechnung der Ableitung nach den einzelnen vom Optimierer vorgegebenen Koeffizienten \\ 
+		\texttt{RadialDistFunction()} & Konstruktor der Klasse. Es wird ein \texttt{PointPair} Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
+		\texttt{realTargetPoints()} & Gibt ein Array aus welches nur die Ziel-Koordinaten enthält. Dieses wird für den Optimierer benötigt.\\ \hline
+		\texttt{retMVF()} & Funktion zur Modellierung der Radialen Verzerrung für den Optimierer. Berechnet zu den Vorgegeben Koeffizienten und einer Start-Koordinate die Ziel-Koordinate\\ \hline
+		\texttt{retMMF()} & Jacobi-Matrix-Funktion zur Berechnung der Ableitung nach den einzelnen vom Optimierer vorgegebenen Koeffizienten \\ 
 		\hline
 	\end{tabular}
-	\caption{Methoden der RadialDistFunction Klasse}
+	\caption{Methoden der \texttt{RadialDistFunction} Klasse}
 \end{table}
 

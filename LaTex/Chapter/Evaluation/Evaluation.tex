@@ -1,10 +1,17 @@
 %!TEX root = ..\..\main.tex
 
-\section{Auswertung}
+\section{Diskussion}
+\label{sec:Auswertung}
 \todo[inline, color=red]{Artjom}
 
 In Abb. \ref{fig:diffsResult} ist die Ausgangslage verdeutlicht. Hier sieht man deutlich die Differenz zwischen den Start- und Zielkoordinaten. 
 
+\begin{figure}[H]
+	\subfigure{\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/18mm_11-1.jpg}}
+	\subfigure {\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/Radial.jpg}}
+	\caption{Links: Ausgangsbild. Rechts: Resultat der Radialen Entzerrung}
+\end{figure}
+	
 \begin{figure}[H]
 	\includegraphics[width=\textwidth]{Images/Auswertung/Testbild1/SourceImage with PointPairs_onlydiffs.jpg}
 	\caption{Differenzen zwischen den idealen und realen Stützpunkten.}
@@ -29,8 +36,9 @@ Anhand der Abb. \ref{fig:Ergebnis} ist deutlich zu erkennen, dass das Gitter gle
 \end{figure}
 
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Images/Auswertung/Testbild1/Radial_onlydiffs.jpg}
-	\caption{Differenzen zwischen den idealen und transformierten Stützpunkten.}
+	\subfigure {\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/SourceImage with PointPairs_onlydiffs.jpg}}
+	\subfigure{	\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/Radial_onlydiffs.jpg}}
+	\caption{Links: Differenzen zwischen den idealen und realen Stützpunkten. \\Rechts: Differenzen zwischen den idealen und transformierten Stützpunkten.}
 	\label{fig:diffsResult}
 \end{figure}
 
@@ -40,3 +48,4 @@ Es existiert somit eine zusätzliche perspektivische Verzerrung für die eine vo
 %@VERA Stimmt das so?
 Weiterhin ist für das Verfahren problematisch, wenn die Verzerrung im mittleren Radius größer ist als im äußeren Radius (Fish-Eye-Effekt), da dass Verfahren mit einer zum Radius zunehmenden Verzerrung rechnet. Bei diesem Effekt sind aber die Äußeren Start und Ziel-Koordinaten bereits sehr nah bei einander, welches vom optimierer nicht bereits weiter verbessert werden kann.
 Ein zusätzlicher Nachteil der Implementierung ist das setzen der Punktpaare. Dies ist nicht sehr praxisnah, da im Optimalfall das Gitter berechnet werden kann. Zusätzlich bringt es Ungenauigkeiten in der Berechnung der Entzerrung.
+
