@@ -6,7 +6,6 @@ In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} un
 
 \subsection{Radial Distance Function (RDF)}
 \label{sec:RDF}
-\todo[inline, color=yellow]{Vera}
 Die oben beschriebene kissenförmige Linsenverzerrung ist demzufolge konvex und strikt symmetrisch um die optische Achse~\cite{WengRadDist}. Es kann daher vorausgesetzt werden, dass der Bildhauptpunkt $c= \begin{pmatrix}
 c_x & c_y
 \end{pmatrix}^T$ im Zentrum der radialen Verzerrung liegt. In diesem Fall kann die Linsenverzerrung, wie in Formel~\ref{equ:BasicModel} moduliert werden. Hier werden die unverzerrten und linearen Bildkoordinaten als $u= \begin{pmatrix}
@@ -42,19 +41,18 @@ r = \sqrt{u_x^2+u_y^2}
  L(r)=1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots
  \end{equation}
 
-Mit den Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ kann die radiale Verzerrung des Bildes korrigiert werden und ausgehend von einer quadratischen Approximation gibt sich anhand Formel~\ref{equ:Taylor} die RDF für $u_x$ und $u_y$ mit Formel~\ref{equ:RDF}~\cite{WangRaddist}.
+Mit den Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ kann die radiale Verzerrung des Bildes korrigiert werden und ausgehend von einer quadratischen Approximation gibt sich anhand Formel~\ref{equ:Taylor} die RDF für $u_x$ und $u_y$ mit den Gleichungen~\ref{equ:RDF}~\cite{WangRaddist}.
 
 \begin{equation}
 \label{equ:RDF}
 \begin{split}
-u_x = d_x*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + c_x\\
-u_y = d_y*(1+\kappa_1*r+\kappa_2*r^2+\kappa_3*r^4 + \dots) + c_y
+u_x = d_x*(1+\kappa_1*r^2+\kappa_2*r^4+\kappa_3*r^6 + \dots) + c_x\\
+u_y = d_y*(1+\kappa_1*r^2+\kappa_2*r^4+\kappa_3*r^6 + \dots) + c_y
 \end{split}
 \end{equation}
 
 Die unbekannten Koeffizienten $\kappa_1, \kappa_2, \kappa_3, \dots$ können mit einer nicht-linearen Ausgleichsrechnung approximiert werden indem das Minimierungsproblem mit der RDF moduliert wird. Ein effizientes Verfahren zur Approximierung der Koeffizienten ist die bekannte LMA~\cite{LevMarquardt}.
 \subsection{Levenberg-Marquard-Approximation}
-\todo[inline, color=yellow]{Vera}
 Die \textit{Methode der kleinsten Quadrate} von Gauß ist ein bekanntes Verfahren, welches die unbekannten Parameter $\alpha$ von überbestimmten Systemen aus linearen oder nichtlinearen Gleichungen annähert. Diese Systeme werden in der Regel aus Wertepaaren moduliert, welche im Voraus gemessen und bestimmt wurden. Der Messwert wird im folgenden als $y$ und der als ideale angenommene Wert $t$ bezeichnet.
 Im Fall der einer radialen Entzerrung sollte für die Anzahl der Wertepaare $M>3$ sein um eine gute Näherung der Parameter beziehungsweise Koeffizienten zu ermitteln.
 Es handelt sich somit um ein überbestimmtes System, welches nicht exakt lösbar ist. In diesem Fall kann nur verlangt werden, dass die Abweichungen und Residuen minimal sind~\cite{schwarz2011numerische}. 
@@ -139,8 +137,8 @@ Zur Berechnung der Ziel-Koordinaten wurden die folgenden Werte aus Tabelle \ref{
 \centering
 \begin{tabular}{|l|l|p{0.5\textwidth}|}
 \hline
-Variablen-Name & Wert & Funktion\\
-\toprule[2px]
+\textbf{Bezeichnung} & \textbf{Wert} & \textbf{Funktion}\\
+\hline
 $dist$ & 111 & Abstand der Gitter-Kreuzpunkte\\
 \hline
 $n_x$ & 10 & Anzahl der Gitter-Kreuzpunkte vom Mittelpunkt bis zum Ende des Gitters\\
@@ -180,7 +178,7 @@ y_{u} = i_{row} * dist + y_{offset}
 
 An diesen Koordinaten werden die entsprechenden Punkte in das Ausgangsbild gezeichnet und es entsteht das in Abbildung \ref{fig:gitter-optimal} dargestellte Bild, welches nun in UnwarpJ genutzt werden kann um die Wertpaare zu generieren.
 
-\begin{figure}[H]
+\begin{figure}
 \includegraphics[width=\textwidth]{Images/optimales-gitter.png}
 \caption{Erzeugte Zielpunkte mit Hilfe der $compute\_draw\_optimal\_Grid()$ Methode}
 \label{fig:gitter-optimal}
@@ -191,22 +189,20 @@ An diesen Koordinaten werden die entsprechenden Punkte in das Ausgangsbild gezei
 
 In Formel~\ref{equ:Levenberg} wird das Modell der LMA definiert und in Formel~\ref{equ:RDF} die RDF angeben. 
 Für den Ausgleich eines radial verzerrten Bildes muss zunächst das entsprechende Modell für die RDF definiert werden. Zunächst wird die Matrix $F(x) \in \mathbb{R}^M$ mit $x = \begin{pmatrix}
-\kappa_1 & \kappa_2 & \kappa_3\end{pmatrix}^T$ laut Formel~\ref{equ:Problem} aufgestellt. Wie bereits in Abschnitt~\ref{sec:RDF} erwähnt wird aus nummerischen Gründen die Form $r^2$ verwendet, welche den Rundungsfehler und den Rechenaufwand minimiert. 
-
-\todo[inline, color=red]{Vera: $r^2$ ersetzen}
+\kappa_1 & \kappa_2 & \kappa_3\end{pmatrix}^T$ laut Formel~\ref{equ:Problem} aufgestellt. Wie bereits in Abschnitt~\ref{sec:RDF} erwähnt wird aus nummerischen Gründen die Form $r_2 = r^2$ verwendet, welche den Rundungsfehler und den Rechenaufwand minimiert. 
 
 \begin{equation}
 \label{equ:Problem}
 \begin{aligned}
 &F(x)=
 \begin{pmatrix}
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_x^0 -u_x^0\\
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_y^0 -u_y^0\\
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_x^i -u_x^i\\
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_y^i -u_y^i\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_x^0 -u_x^0\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_y^0 -u_y^0\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_x^i -u_x^i\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_y^i -u_y^i\\
 \vdots\\
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_x^M -u_x^M\\
-(1+\kappa_1 r + \kappa_2 r^2 + \kappa_3 r^3)d_y^M -u_y^M\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_x^M -u_x^M\\
+(1+\kappa_1 r_2 + \kappa_2 r_2^2 + \kappa_3 r_2^3)d_y^M -u_y^M\\
 \end{pmatrix}
 &mit\ i = 0,\dots,M
 \end{aligned}
@@ -224,13 +220,13 @@ Die benötigte Jacobi-Matrix $F'(x)$ ergibt sich aus der Definition in Formel~\r
  \vdots & \vdots & \vdots \\
 \frac{\delta F_M}{\delta \kappa_1} & \frac{\delta F_M}{\delta \kappa_2} & \frac{\delta F_M}{\delta \kappa_2}\\
 \end{pmatrix}= \begin{pmatrix}
-rd_x^0 & r^2d_x^0 & r^3d_x^0\\
-rd_y^0 & r^2d_y^0 & r^3d_y^0\\
-rd_x^1 & r^2d_x^i & r^3d_x^i\\
-rd_y^1 & r^2d_y^i & r^3d_y^i\\
+r_2d_x^0 & r_2^2d_x^0 & r_2^3d_x^0\\
+r_2d_y^0 & r_2^2d_y^0 & r_2^3d_y^0\\
+r_2d_x^1 & r_2^2d_x^i & r_2^3d_x^i\\
+r_2d_y^1 & r_2^2d_y^i & r_2^3d_y^i\\
 \vdots & \vdots & \vdots \\
-rd_x^M & r^2d_x^M & r^3d_x^M\\
-rd_y^M & r^2d_y^M & r^3d_y^M\\
+r_2d_x^M & r_2^2d_x^M & r_2^3d_x^M\\
+r_2d_y^M & r_2^2d_y^M & r_2^3d_y^M\\
 \end{pmatrix}
 &mit\ i = 0,\dots,M
 \end{aligned}
@@ -267,7 +263,7 @@ Der Startvektor $x_0$ wird mit Koeffizienten initialisiert die keine Verzerrung 
 
 Im folgenden werden die Methoden der einzelnen Klassen erläutert. Die vollständige UML zur besseren Verständlichkeit der Klassenbeziehungen ist der Abbildung~\ref{img:UML} zu entnehmen.
 
-\begin{figure}[H] %muss gesetzt werden sonnst rutscht das bild in ein anderes kapitel
+\begin{figure} %muss gesetzt werden sonnst rutscht das bild in ein anderes kapitel
 	\center
 	\includegraphics[width=\textheight, angle =90]{Images/Class Diagram1.png}
 	\caption{UML Klassendiagramm}
@@ -281,6 +277,8 @@ Die Klasse besitzt folgende Methoden und deren Funktion:
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
+		\hline
+		\textbf{Methode}& \textbf{Beschreibung}\\
 		\hline
 		\texttt{run()} & Main-Methode des PlugIns in der die Optimierung aufgerufen wird\\ \hline
 		\texttt{setup()} & Konstruktor-Methode des PlugIns mit der die Bildreferenz abgespeichert wird\\ \hline
@@ -303,6 +301,8 @@ Klasse zum Erzeugen der Funktionen für den Levenber-Marquadt-Optimierer~\cite{o
 
 \begin{table}[H]
 	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
+		\hline
+		\textbf{Methode}& \textbf{Beschreibung}\\
 		\hline
 		\texttt{RadialDistFunction()} & Konstruktor der Klasse. Es wird ein \texttt{PointPair} Array erwartet welcher Koordinaten-Paare für Start- und Ziel-Koordinaten enthält.\\ \hline
 		\texttt{realTargetPoints()} & Gibt ein Array aus welches nur die Ziel-Koordinaten enthält. Dieses wird für den Optimierer benötigt.\\ \hline
