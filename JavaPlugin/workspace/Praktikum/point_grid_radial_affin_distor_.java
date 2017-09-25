@@ -6,12 +6,11 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -407,7 +406,7 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 
 	
 	/**
-	 * 
+	 * Initalisiert und führt den Levenberg Marquart Optimierer aus
 	 * @param punkt_paare Array mit PointPair Objekten in denen die Vorlage- und Ziel-Pixelkoordinaten gespeichert sind
 	 * @return Koefizienten der Radialen-Verzerrung nach Levenberg-Marquadt
 	 */
@@ -460,7 +459,6 @@ public class point_grid_radial_affin_distor_ implements PlugInFilter {
 	 */
 	public int setup(String arg0, ImagePlus arg1) {
 		this.distPicture = arg1;
-		
 		return DOES_ALL;
 	}
 }

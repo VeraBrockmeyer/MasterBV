@@ -276,18 +276,18 @@ Hauptklasse der Anwendung. Implementiert das Interface \texttt{PluginFilter} um 
 Die Klasse besitzt folgende Methoden und deren Funktion:
 
 \begin{table}[H]
-	\begin{tabular}{|p{0.45\textwidth} | p{0.55\textwidth}|} 
+	\begin{tabular}{|p{0.3\textwidth} | p{0.7\textwidth}|} 
 		\hline
 		\textbf{Methode}& \textbf{Beschreibung}\\
 		\hline
 		\texttt{run()} & Main-Methode des PlugIns in der die Optimierung aufgerufen wird\\ \hline
 		\texttt{setup()} & Konstruktor-Methode des PlugIns mit der die Bildreferenz abgespeichert wird\\ \hline
-		\texttt{compute\_draw\_optimal\_Grid()} & Berechnung und Abbildung des optimalen Gitters anhand der Klassenkonstanten \\ \hline
+		\texttt{compute\_draw\_ optimal\_Grid()} & Berechnung und Abbildung des optimalen Gitters anhand der Klassenkonstanten \\ \hline
 		\texttt{readData()} & Liest aus einer in ImageJ geöffneten UnwarpJ-Landmarks Datei Punkt-Paare ein für die Start- und Ziel-Koordinaten\\\hline
 		\texttt{computeDrawRadial Transformation()} & Startet die Berechnung der radialen Verzerrung und zeichnet das dazugehörige entzerrte Bild\\ \hline
 		\texttt{computeDrawProjective Transformation()} & Berechnet anhand von Punkpaaren die projektive Transformation und gibt die Abbildung zurück. Zusätzlich werden die Punkt-Paare mit transformiert.\\ \hline
 		\texttt{drawTargets()} & Zeichnet Punkte an den übergebenen Start- und Ziel-Koordinaten in das übergebene Bild\\ \hline
-		\texttt{compute\_radial\_dist\_koeff()} & Berechnet mit dem Levenberg-Marquadt Optimierer die Koeffizienten der radialen Verzerrung der übergebenen Punkte und gibt die Koeffizienten zurück\\ 
+		\texttt{compute\_radial\_ dist\_koeff()} & Berechnet mit dem Levenberg-Marquadt Optimierer die Koeffizienten der radialen Verzerrung der übergebenen Punkte und gibt die Koeffizienten zurück\\ 
 		\hline
 	\end{tabular}
 	\caption{Methoden der \texttt{point\_grid\_radial\_affin\_distor\_} Klasse}
