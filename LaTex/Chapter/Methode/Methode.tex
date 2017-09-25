@@ -1,9 +1,8 @@
 %!TEX root = ..\..\main.tex
 
 \section{Methode}
-Lineare Kameramodell wie das projektive Transformation bilden den Weltpunkt, Bildhauptpunkt und das Projektionszentrum auf dem selben optischen Strahl ab. Im idealen Fall werden nach der Transformation alle Bildgeraden wieder als Geraden dargestellt. In der Realität bilden gerade Kamerasysteme mit Weitwinkelobjektiven die Geraden gebogen ab, da die Brennweite klein ist und der Blickwinkel sehr groß~\cite{HartleyRadDist}. Ein weiterer Grund ist ein mangelhaftes Linsendesign mit einer fehlerhaften Krümmung der einzelnen Linsenelementen in einem Objektiv~\cite{WengRadDist}\cite{Zhang:1996:EGT:844381.845228}. Diese verzerrten Abbildungen werden in der Regel als kissenförmig beschrieben und Radiale Linsenverzerrung genannt. In einigen Fällen kann es aber auch zu tonnenförmigen Verzerrungen kommen. Neben den linearen Kamermodellen muss also für die vollständige Nachbildung einer realen Kamera auch die Linsenverzerrung berücksichtigt werden. 
-
-In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und der Levenberg-Marquard-Approximation (LMA)~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
+\label{Methode}
+In den nächsten Abschnitten wird im Detail auf die RDF~\cite{HartleyRadDist} und der LMA~\cite{LevMarquardt} eingegangen. Die RDF beschreibt das Verhalten der Linsenverzerrung und mit Hilfe der LMA können die entsprechenden Verzerrungskoeffizienten aus korrespondierenden Punktepaaren  approximiert werden. Diese Paare beinhalten stets einen Punkt in der Welt und den entsprechenden Bildpunkt auf den er abgebildet wird.
 
 \subsection{Radial Distance Function (RDF)}
 \label{sec:RDF}
@@ -90,7 +89,7 @@ Die iterative Lösung des GNV basiert auf der grundlegenden Annahme, dass der Gr
 \Delta\phi(x)=F'(x)^TF(x)
 \end{equation}
 
-Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden.
+Das GNV versucht die Lösung $x$ mit Hilfe von geeigneten linearen Problemen unter der Voraussetzung eines geeigneten Startwerts $x_0$ anzunähern. Deshalb wird $F$ zunächst in eine lineare Approximation mittel Taylorentwicklung zerlegt und führt zu der Problemdefinition in Formel~\ref{equ:Newton}~\cite{LevMarquardt}. Während des iterativen Prozesse wird $x^k$ immer weiter an die gesuchte Lösung angenähert in dem die Lösung des linearen Ausgleichsproblems $s^k$ nach jeder Iteration auf das aktuelle $x^k$ aufaddiert wird. Die Lösung $s^k$ kann bekannterweise mit der \textit{Cholesky}- oder QR-Zerlegung gelöst werden~\cite{schwarz2011numerische}.
 
 \begin{equation}
 \label{equ:Newton}
@@ -122,6 +121,7 @@ Mit einer geeignet großen Wahl von $\mu$ kann eine Korrektur von $s^k$ erreicht
  
 
 \section{System}
+\label{sec:System}
 
 In den folgenden Abschnitten wird auf das implementierte System eingegangen. Zunächst wird in Abschnitt~\ref{sec:Wertpaare} dargelegt wie Wertpaare und insbesondere die idealen Koordinaten des Punktrasters ermittelt wurden. Im Anschluss wird im Abschnitt~\ref{sec:Problem} das Problem des LMA moduliert und in Abschnitt~\ref{sec:Minimierung} die Initialisierung des LMA beschrieben. Zuletzt wird aufgezeigt wie das Java Plugin aufgebaut wurde und alle implementierten Funktionen erläutert.
 
@@ -154,9 +154,6 @@ $n_{row}$ & 13 & Anzahl der Gitter-Reihen\\
 \midrule
 $x_g^0$ & 1084 & Gitter-Mittelpunkt \\
 $y_g^0$ & 714 & \\
-\midrule
-$i_{col}$ & - & Index der Spalten \\
-$i_{row}$ & - & Index der Zeilen\\
 \bottomrule
 \end{tabular}
 \caption{Variablen zur Berechnung des optimalen Gitters ausgeführt als Klassenkonstanten. Alle Werte beziehen sich auf das Bild \texttt{18mm\_11-1.tif}. }
@@ -174,7 +171,7 @@ y_{offset} &= y_g^0 - n_y * dist
 \end{aligned}
 \end{equation}
 
-Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gittter-Reihe und Gitter-Spalte. 
+Danach erfolgt die Berechnung der Kreuzpunkte $\begin{pmatrix}x_{u} & y_{u}\end{pmatrix}^T \in \mathbb{R}^2$ laut Formel~\ref{equ:gitter_kreuzpunkte} über eine geschachtelte Schleife für jede Gitter-Reihe und Gitter-Spalte. $i_{col}$ und $i_{row}$ geben den Index der Zeilen an.
 
 \begin{equation}
 \label{equ:gitter_kreuzpunkte}
