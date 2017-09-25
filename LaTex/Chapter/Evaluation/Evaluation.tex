@@ -2,23 +2,9 @@
 
 \section{Diskussion}
 \label{sec:Auswertung}
-\todo[inline, color=red]{Artjom}
+\todo[inline, color=yellow]{Artjom}
 
-In Abb. \ref{fig:diffsResult} ist die Ausgangslage verdeutlicht. Hier sieht man deutlich die Differenz zwischen den Start- und Zielkoordinaten. 
-
-\begin{figure}[H]
-	\subfigure{\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/18mm_11-1.jpg}}
-	\subfigure {\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/Radial.jpg}}
-	\caption{Links: Ausgangsbild. Rechts: Resultat der Radialen Entzerrung}
-\end{figure}
-	
-\begin{figure}[H]
-	\includegraphics[width=\textwidth]{Images/Auswertung/Testbild1/SourceImage with PointPairs_onlydiffs.jpg}
-	\caption{Differenzen zwischen den idealen und realen Stützpunkten.}
-	\label{fig:diffsResult}
-\end{figure}
-
-Nach der radialen Entzerrung mit dem implementierten Verfahren kommt man zu dem in Abb. \ref{fig:Ergebnis} und Abb. \ref{fig:diffsResult} gezeigten Ergebnis. Die Koeffizienten der Radialen Verzerrung sind für dieses Resultat in Gl. \ref{equ:radial_koeff} notiert. 
+Nach der radialen Entzerrung mit dem implementierten Verfahren kommt man zu dem in Abb. \ref{fig:Ergebnis} und Abb. \ref{fig:diffsResult} gezeigten Ergebnis. Die Koeffizienten der radialen Entzerrung sind für dieses Resultat in Gl. \ref{equ:radial_koeff} notiert. 
 
 \begin{align}
 a &=  2.8974105705613364E-8 \nonumber \\
@@ -27,13 +13,14 @@ c &=  2.8527492714683317E-21
 \label{equ:radial_koeff}
 \end{align}
 
-Anhand der Abb. \ref{fig:Ergebnis} ist deutlich zu erkennen, dass das Gitter gleichmäßiger und gerader wird. Des Weiteren wird durch Abb. \ref{fig:diffsResult} verdeutlicht, dass sich die Differenzen zwischen Start- und Zielkoordinaten der Punkte verkleinern. Dies bestätigt, dass das Verfahren funktioniert.
-
 \begin{figure}[H]
-	\includegraphics[width=\textwidth]{Images/Auswertung/Testbild1/Radial.jpg}
-	\caption{Resultat der Radialen Entzerrrung}
+	\subfigure{\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/18mm_11-1.jpg}}
+	\subfigure {\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/Radial.jpg}}
+	\caption{Links: Ausgangsbild. Rechts: Resultat der Radialen Entzerrung}
 	\label{fig:Ergebnis}
 \end{figure}
+	
+Anhand der Abb. \ref{fig:Ergebnis} ist deutlich zu erkennen, dass das Gitter gleichmäßiger und gerader wird. Des Weiteren wird durch Abb. \ref{fig:diffsResult} verdeutlicht, dass sich die Differenzen zwischen Start- und Zielkoordinaten der Punkte verkleinern. Dies bestätigt, dass das Verfahren funktioniert.
 
 \begin{figure}[H]
 	\subfigure {\includegraphics[width=\textwidth/2]{Images/Auswertung/Testbild1/SourceImage with PointPairs_onlydiffs.jpg}}
@@ -42,10 +29,13 @@ Anhand der Abb. \ref{fig:Ergebnis} ist deutlich zu erkennen, dass das Gitter gle
 	\label{fig:diffsResult}
 \end{figure}
 
-Jedoch sind die Ergebnisse noch nicht optimal. Einer der Gründe ist
+Bei genaurer Betrachtung der Differenzen in Abb. \ref{fig:diffsResult} ist jedoch zu erkennen, dass sich vor allem im linken Bereich die Differenzen verkleinern, wohingegen sie im rechten Bereich etwas zunehmen.
+Dies deutet darauf hin, dass das Ergebnis noch nicht optimal ist. Einer der Gründe ist
 das implementierte Verfahren zur radialen Entzerrung. Es funktioniert nur wenn in dem Bild nur eine vom Radius abhängige Verzerrung existiert. Wie man jedoch in Abb. \ref{fig:diffsResult} erkennen kann ist die Verzerrung auf der linken Seite größer als auf der rechten Seite.
 Es existiert somit eine zusätzliche perspektivische Verzerrung für die eine vorherige projektive Transformation notwendig ist damit das implementierte Verfahren angewendet werden kann.
+
 %@VERA Stimmt das so?
-Weiterhin ist für das Verfahren problematisch, wenn die Verzerrung im mittleren Radius größer ist als im äußeren Radius (Fish-Eye-Effekt), da dass Verfahren mit einer zum Radius zunehmenden Verzerrung rechnet. Bei diesem Effekt sind aber die Äußeren Start und Ziel-Koordinaten bereits sehr nah bei einander, welches vom optimierer nicht bereits weiter verbessert werden kann.
+Weiterhin ist für das Verfahren problematisch, wenn die Verzerrung im mittleren Radius größer ist als im äußeren Radius (Fish-Eye-Effekt), da dass Verfahren mit einer zum Radius zunehmenden Verzerrung rechnet. Bei diesem Effekt sind aber die äußeren Start und Ziel-Koordinaten bereits sehr nah bei einander, welches vom Optimierer nicht bereits weiter verbessert werden kann.
+
 Ein zusätzlicher Nachteil der Implementierung ist das setzen der Punktpaare. Dies ist nicht sehr praxisnah, da im Optimalfall das Gitter berechnet werden kann. Zusätzlich bringt es Ungenauigkeiten in der Berechnung der Entzerrung.
 
