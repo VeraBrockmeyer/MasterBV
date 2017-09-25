@@ -2,9 +2,11 @@
 
 \section{Materialien}\label{sec:Materials}
 
+In den folgenden beiden Abschnitten wird die eingesetzte Hardware und die verwendete Software erläutert. Somit können bei Bedarf Rückschlüsse auf Fehlerquellen gezogen werden.
+
 \subsection{Hardware}\label{sec:Hardware}
 
-Während des Entwicklungsphase wurde das Plugin auf den beiden Computern ausgeführt, die in den Tabelle \ref{tab:Computer1} und Tabelle \ref{tab:Computer2} beschreiben sind. Beide Computer mussten die Software ausführen können die in Abschnitt \ref{sec:Software} beschreiben sind.
+Während der Entwicklung wurde das ImageJ-Plugin auf den beiden Computern ausgeführt, die in den Tabelle \ref{tab:Computer1} und Tabelle \ref{tab:Computer2} beschreiben sind. Beide Computer mussten die Software ausführen können die in Abschnitt \ref{sec:Software} beschreiben ist.
 
 %Veras Computer:
 \begin{table}[H]
@@ -12,15 +14,15 @@ Während des Entwicklungsphase wurde das Plugin auf den beiden Computern ausgef�
 	\begin{tabular}{|l|l|}
 		\hline
 		\Absatzbox{}
-		\textbf{Acer E5-571G}& \textbf{Description} \\
+		\textbf{Acer E5-571G}& \textbf{Beschreibung} \\
 		\hline
-		Processor & Intel Core i7 CPU @ 2.40 GHz\\
+		Prozessor & Intel Core i7 CPU @ 2.40 GHz\\
 		\hline
 		RAM & 8 GB  \\
 		\hline 
-		Graphic Card & NVIDIA GeForce 840M\\
+		Grafik-Karte & NVIDIA GeForce 840M\\
 		\hline
-		Operating System &  Windows 10 Education 64 bit   \\
+		Betriebssystem &  Windows 10 Education 64 bit   \\
 		\hline
 	\end{tabular}
 	\caption[Auszug aus dem Datenblatt des Acer E5-571G]{Auszug aus dem Datenblatt des Acer E5-571G}.
@@ -51,6 +53,7 @@ Während des Entwicklungsphase wurde das Plugin auf den beiden Computern ausgef�
 \end{table}
 
 \subsection{Software}\label{sec:Software}
+Die in den folgenden Abschnitten beschriebene Software kam zum Einsatz bei der Entwicklung des Plugins.
 
 \subsubsection{Eclipse Entwicklungs-Umgebung}
 Eclipse ist eine offene Software-Entwicklungsplattform, die aus erweiterbaren Frameworks, Tools und Laufzeit-Umgebungen für die Entwicklung, die Bereitstellung und das Verwalten von Software über den gesamten Lebenszyklus besteht.
@@ -62,7 +65,7 @@ Eclipse IDE for Java Developers Version: Neon.2 Release (4.6.2) wurde zur Entwic
 \subsubsection{Java}
 Java ist eine objektorientierte Programmiersprache und gleichzeitig eine Laufzeitumgebung für diese Programme. Ein besonderer Vorteil von Java gegenüber ähnlichen objektorientierten Sprachen wie z.B. C\texttt{++} ist die automatisierte Speicherverwaltung~\cite{java}. 
 
-Das Plugin zur radialen Entzerrung von regelmäßigen Punktrastern wurde in der Programmiersprache Java (Version $ 1.8.0 31 $) geschrieben, damit es in ImageJ genutzt werden kann. ImageJ bietet bestimmte Interface-Klassen an durch deren Implementierung von ImageJ ausführbare Komponenten geschrieben werden können.
+Das Plugin zur radialen Entzerrung von regelmäßigen Punktrastern wurde in der Programmiersprache Java geschrieben, damit es in ImageJ genutzt werden kann. ImageJ bietet bestimmte Interface-Klassen an durch deren Implementierung von ImageJ ausführbare Komponenten geschrieben werden können.
 
 Java lief in der Laufzeitumgebung Java SE Runtime Environment (Version $ 1.8.0 31-b13 $), welche auf dem jeweiligen Betriebssystem (siehe Abs. \ref{sec:Hardware}) installiert war.
 
@@ -71,7 +74,7 @@ Java lief in der Laufzeitumgebung Java SE Runtime Environment (Version $ 1.8.0 3
 \textit{ImageJ} ist eine plattformunabhängige Open-Source Bildbearbeitungssoftware, die in Java implementiert wurde. Mit \textit{ImageJ} können die gängigen Bildformate, wie TIFF, JPEG oder GIF mit unterschiedlichen Bittiefen angezeigt, analysiert und bearbeitet werden~\cite{Collins_ImageJ}. Es ist weiterführend ein weitverbreitetes Werkzeug zur Entwicklung von Methoden und Algorithmen, die zur Analyse von Bilddaten vorgesehen sind. Die Vielzahl der Funktionen wird stetig von den Nutzern in Form von Plugins erweitert und verbessert, wie es in Open-Source-Plattformen gängige Praxis ist.
 
 \subsubsection{ImageJ Makros}	
-\textit{ImageJ} Makros~\cite{JMacros} sind kleine Programme, die eine Abfolge von \textit{ImageJ} Kommandos ausführen. Zur Erstellung dieser Programme wurde der Recorder entwickelt, welche die ausgeführten Kommandos als Textdatei abspeichert. Diese Textdateien können editiert werden und in \textit{ImageJ} beliebig oft ausgeführt werden. Sie stellen eine erhebliche Arbeitserleichterung beim Testen von Algorithmen mit mehreren Testdaten dar, da sie schnell implementiert sind. Vor allem werden sie genutzt um ein geeignetes Verfahren oder die richtige Parametrierung zu ermitteln. Ist ein richtiger Algorithmus gefunden, kann die Textdatei einfach in Java übersetzt werden.
+\textit{ImageJ} Makros~\cite{JMacros} sind kleine Programme, die eine Abfolge von \textit{ImageJ} Kommandos ausführen. Zur Erstellung dieser Programme wurde der Recorder entwickelt, welche die ausgeführten Kommandos als Textdatei abspeichert. Diese Textdateien können editiert werden und in \textit{ImageJ} beliebig oft ausgeführt werden. Sie stellen eine erhebliche Arbeitserleichterung beim Testen von Algorithmen mit mehreren Testdaten dar, da sie schnell implementiert werden können. Vor allem werden sie genutzt um ein geeignetes Verfahren oder die richtige Parametrierung zu ermitteln. Ist ein richtiger Algorithmus gefunden, kann die Textdatei einfach in Java übersetzt werden.
 
 
 \subsubsection{UnwarpJ}
